@@ -1,14 +1,14 @@
-#include <sago>
+#include <knight>
 
 // ============================================================
-// SA:GO Starter Gamemode — Knight (.sa) edition
+// Knight Starter Gamemode — Knight (.sa) edition
 // ============================================================
 // This is the default gamemode. It is transpiled to Lua at load time and
 // calls the same sa.* natives as the legacy Lua gamemode (bare.lua).
 // ============================================================
 
 system::config() {
-    server.name = "SA:GO Server";
+    server.name = "Knight Server";
     server.gamemode = "bare 1";
     server.max_players = 50;
     server.port = 7777;
@@ -23,7 +23,7 @@ system::config() {
 // ---- World setup (runs once) ----
 system::start() {
     sa.DisableInteriorEnterExits();
-    server.set_gamemode_text("SA:GO 1");
+    server.set_gamemode_text("Knight 1");
 
     // Spawn classes: skin, x, y, z, angle, weapon, ammo
     player.add_class(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
@@ -38,7 +38,7 @@ system::start() {
 
 // TextDraws are created once at load time (module-level declarations), then
 // shown per-player on spawn.
-let brand_td = TextDraw.create(530, 8, "SA:GO");
+let brand_td = TextDraw.create(530, 8, "Knight");
 sa.TextDrawLetterSize(brand_td, 0.4, 1.6);
 sa.TextDrawColor(brand_td, 0xFFFFFFFF);
 
@@ -48,7 +48,7 @@ sa.TextDrawColor(help_td, 0x00FF00FF);
 
 // ---- Player lifecycle ----
 player::connect() {
-    self.message("Welcome to SA:GO, {self.name}!");
+    self.message("Welcome to Knight, {self.name}!");
     self.set_camera_pos(1978.0, 1343.0, 35.0);
     self.set_camera_look_at(1978.0, 1343.0, 15.0, 1);
 };

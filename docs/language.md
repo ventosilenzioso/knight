@@ -9,7 +9,7 @@ and type-checks every handler and native call against the engine API.
 ## 1. Files and includes
 
 - A gamemode may be a **single self-contained `.sa` file**.
-- `#include <sago>` is **optional**; all `sa.*` natives and object types are
+- `#include <knight>` is **optional**; all `sa.*` natives and object types are
   built in.
 - Custom includes: `#include <path/to/file.sa>`, resolved relative to the
   including file. Circular includes are rejected with an error.

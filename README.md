@@ -1,6 +1,6 @@
 # Knight
 
-**Knight** is the statically-typed scripting language used by **SA:GO**, the
+**Knight** is the statically-typed scripting language used by **Knight**, the
 from-scratch SA-MP 0.3.7 server written in Go. Gamemodes are authored as a
 single `.sa` file: you declare typed event handlers, configure the server, and
 call engine natives through the `sa.*` namespace.
@@ -55,7 +55,7 @@ is required. `self` is bound to the event's subject (e.g. the `Player` for
   equal"; compound assignment (`+=`, `-=`, `*=`, `/=`) for numeric fields.
 - **String interpolation** — `"score={player.score}"`, escape braces with
   `\{` / `\}`.
-- **Includes** — `#include <sago>` is optional; custom files with
+- **Includes** — `#include <knight>` is optional; custom files with
   `#include <path.sa>` (cycles are detected).
 - **Config block** — `system::config() { server.name = "..."; ... };` writes
   `server.cfg` fields.
@@ -97,10 +97,10 @@ long tail.
 | `examples/full.sa` | Config block, classes, chat, commands, death handling |
 | `examples/bare.sa` | Realistic gamemode: SQLite auth, dialogs, anticheat, admin commands |
 
-Run any of them with the SA:GO server:
+Run any of them with the Knight server:
 
 ```bash
-sa-go-server -cfg server.cfg -gamemode examples/full.sa
+knight-server -cfg server.cfg -gamemode examples/full.sa
 ```
 
 ## Verifying
@@ -112,4 +112,4 @@ for f in examples/*.sa; do ./bin/knight-linux-amd64 -check "$f" || exit 1; done
 ## License
 
 The examples and documentation in this repository are provided for use with
-SA:GO. The `knight` binaries are distributed as prebuilt tools.
+Knight. The `knight` binaries are distributed as prebuilt tools.
