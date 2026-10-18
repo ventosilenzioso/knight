@@ -22,8 +22,8 @@ examples/  runnable .sa gamemodes
 |---|---|
 | [`docs/language.md`](docs/language.md) | Syntax: declarations, types, operators, literals, strings, objects, commands |
 | [`docs/builtins.md`](docs/builtins.md) | Standard library: conversions, math, strings, arrays, maps |
-| [`docs/events.md`](docs/events.md) | All event handlers with parameters, `self` type and return |
-| [`docs/natives.md`](docs/natives.md) | Object fields/methods, factories, `server.*`, and the 498-native index |
+| [`docs/events.md`](docs/events.md) | Every event: when it fires, parameters, `self` type and return |
+| [`docs/natives.md`](docs/natives.md) | Object fields/methods/factories with descriptions, `server.*`, and all 498 natives explained |
 | [`docs/configuration.md`](docs/configuration.md) | `system::config()` fields and their `server.cfg` keys |
 
 ## The validator
