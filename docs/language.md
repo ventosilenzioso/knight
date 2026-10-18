@@ -182,6 +182,23 @@ The mapping from keys to `server.cfg` entries is listed in
 
 ---
 
+## 9b. Built-in functions
+
+A standard library of language helpers is available without any include:
+conversions (`int`, `float`, `str`, `bool`, `typeof`), predicates
+(`is_null`, `is_number`, `is_string`, `is_bool`, `is_array`, `is_map`), math
+(`abs`, `round`, `floor`, `ceil`, `sqrt`, `pow`, `min`, `max`, `clamp`,
+`random`), strings (`len`, `upper`, `lower`, `trim`, `substr`, `contains`,
+`starts_with`, `ends_with`, `replace`, `split`, `join`), collections
+(`array`, `map`, `push`, `pop`, `shift`, `at`, `keys`, `values`, `has`,
+`del`), and utilities (`format`, `distance`). The full table is in
+[`builtins.md`](builtins.md).
+
+```knight
+let parts = split(player.name, "_");
+player.message("Hello {upper(join(parts, " "))}, roll {random(1,6)}");
+```
+
 ## 10. Events
 
 An event handler is called by the engine. `self` is bound to the event's

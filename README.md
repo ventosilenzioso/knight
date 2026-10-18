@@ -61,7 +61,8 @@ is required. `self` is bound to the event's subject (e.g. the `Player` for
   `server.cfg` fields.
 
 See [`docs/language.md`](docs/language.md) for the full syntax, the event
-catalogue, object fields/methods, and configuration keys.
+catalogue, object fields/methods, and configuration keys. The standard library
+is documented in [`docs/builtins.md`](docs/builtins.md).
 
 ## Events
 
@@ -96,12 +97,22 @@ long tail.
 | `examples/minimal.sa` | Smallest loadable gamemode |
 | `examples/full.sa` | Config block, classes, chat, commands, death handling |
 | `examples/bare.sa` | Realistic gamemode: SQLite auth, dialogs, anticheat, admin commands |
+| `examples/builtins.sa` | Standard library: strings, math, arrays and maps |
 
 Run any of them with the Knight server:
 
 ```bash
 knight-server -cfg server.cfg -gamemode examples/full.sa
 ```
+
+## Built-in functions
+
+Knight ships a standard library of language-level helpers — conversions
+(`int`, `float`, `str`, `bool`), type predicates, math (`abs`, `min`, `max`,
+`clamp`, `sqrt`, `pow`, `random`), string helpers (`upper`, `lower`, `trim`,
+`substr`, `split`, `join`, `replace`), and collections (`array`, `map`, `push`,
+`pop`, `at`, `keys`, `values`, `has`, `del`). See
+[`docs/builtins.md`](docs/builtins.md).
 
 ## Verifying
 

@@ -1,0 +1,33 @@
+// Demonstrates the Knight standard library (built-in functions).
+system::start() {
+    player.add_class(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+};
+
+player::connect() {
+    let parts = split(self.name, "_");
+    let label = join(parts, " ");
+    self.message("Welcome, {upper(label)}!");
+    self.message("name length={len(self.name)} roll={random(1,6)}");
+};
+
+player::command("/math", float a, float b) {
+    self.message("min={min(a,b)} max={max(a,b)} abs={abs(a-b)} pow={pow(a,2.0)}");
+    self.message("clamp={clamp(a,0.0,100.0)} sqrt={sqrt(abs(b))} round={round(a)}");
+};
+
+player::command("/str", string text) {
+    self.message("upper={upper(text)} trim={trim(text)} starts={starts_with(text, "a")}");
+    self.message("sub={substr(text,0,3)} replaced={replace(text," ","_")}");
+};
+
+player::command("/coll") {
+    let arr = array();
+    arr = push(arr, 10);
+    arr = push(arr, 20);
+    arr = push(arr, 30);
+    self.message("count={len(arr)} first={at(arr,0)} last={pop(arr)}");
+    let m = map("score", 5);
+    m["level"] = 3;
+    self.message("keys={join(keys(m), ",")} has={has(m,"score")}");
+    self.message("formatted={format("%s has %d", "CJ", 42)} dist={distance(0.0,0.0,0.0,3.0,4.0,0.0)}");
+};
