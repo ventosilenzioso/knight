@@ -22,56 +22,58 @@ system::config() {
 
 // ---- World setup (runs once) ----
 system::start() {
-    sa.DisableInteriorEnterExits();
-    server.set_gamemode_text("Knight 1");
+    DisableInteriorEnterExits();
+    SetGameModeText("Knight 1");
 
     // Spawn classes: skin, x, y, z, angle, weapon, ammo
-    player.add_class(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
-    player.add_class(7, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
-    player.add_class(21, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
-    player.add_class(29, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(7, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(21, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(29, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
 
-    sa.SetWeather(10);
-    sa.SetWorldTime(12);
-    sa.SetGravity(0.008);
+    SetWeather(10);
+    SetWorldTime(12);
+    SetGravity(0.008);
 };
 
 // TextDraws are created once at load time (module-level declarations), then
 // shown per-player on spawn.
-let brand_td = TextDraw.create(530, 8, "Knight");
-sa.TextDrawLetterSize(brand_td, 0.4, 1.6);
-sa.TextDrawColor(brand_td, 0xFFFFFFFF);
+let brand_td = 0;
+TextDrawCreate(brand_td, 530, 8, "Knight");
+TextDrawLetterSize(brand_td, 0.4, 1.6);
+TextDrawColor(brand_td, 0xFFFFFFFF);
 
-let help_td = TextDraw.create(8, 8, "Type /help for commands");
-sa.TextDrawLetterSize(help_td, 0.28, 1.1);
-sa.TextDrawColor(help_td, 0x00FF00FF);
+let help_td = 1;
+TextDrawCreate(help_td, 8, 8, "Type /help for commands");
+TextDrawLetterSize(help_td, 0.28, 1.1);
+TextDrawColor(help_td, 0x00FF00FF);
 
 // ---- Player lifecycle ----
 player::connect() {
-    self.message("Welcome to Knight, {self.name}!");
-    self.set_camera_pos(1978.0, 1343.0, 35.0);
-    self.set_camera_look_at(1978.0, 1343.0, 15.0, 1);
+    SendClientMessage(playerid, "Welcome to Knight, {PlayerName(playerid)}!");
+    SetPlayerCameraPos(playerid, 1978.0, 1343.0, 35.0);
+    SetPlayerCameraLookAt(playerid, 1978.0, 1343.0, 15.0, 1);
 };
 
 player::spawn() {
-    self.set_camera_behind();
-    self.set_health(100.0);
-    self.set_armour(0.0);
+    SetPlayerCameraBehindPlayer(playerid);
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 0.0);
 
-    self.show_textdraw(brand_td);
-    self.show_textdraw(help_td);
+    TextDrawShowForPlayer(playerid, brand_td);
+    TextDrawShowForPlayer(playerid, help_td);
 
     // Radar blip at spawn.
-    self.set_map_icon(10, 1958.4, 1343.2, 15.4, 0, 0x00FF00FF, 1);
-    self.message("Spawned. HP: {self.health} | Money: {self.money}");
+    SetPlayerMapIcon(playerid, 10, 1958.4, 1343.2, 15.4, 0, 0x00FF00FF, 1);
+    SendClientMessage(playerid, "Spawned. HP: {GetPlayerHealth(playerid)} | Money: {GetPlayerMoney(playerid)}");
 };
 
 player::death(Player killer) {
     if (killer != null) {
-        self.message("You were killed by {killer.name}.");
-        killer.send_score(killer.score + 1);
+        SendClientMessage(playerid, "You were killed by {PlayerName(killer)}.");
+        SetPlayerScore(killer, GetPlayerScore(killer) + 1);
     } else {
-        self.message("You died.");
+        SendClientMessage(playerid, "You died.");
     }
 };
 
@@ -81,68 +83,68 @@ player::chat(string message) {
 
 // ---- Commands ----
 player::command("/help") {
-    self.message("Commands: /heal /stats /tp <x> <y> <z> /pay <player> <amount> /money <amount> /skin <id> /giveweapon <id> <ammo> /anim <lib> <name> /dance /camera");
+    SendClientMessage(playerid, "Commands: /heal /stats /tp <x> <y> <z> /pay <player> <amount> /money <amount> /skin <id> /giveweapon <id> <ammo> /anim <lib> <name> /dance /camera");
 };
 
 player::command("/heal") {
-    self.set_health(100.0);
-    self.set_armour(100.0);
-    self.message("Healed.");
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 100.0);
+    SendClientMessage(playerid, "Healed.");
 };
 
 player::command("/stats") {
-    self.message("Name: {self.name} | HP: {self.health} | Armour: {self.armour} | Money: {self.money} | Score: {self.score}");
+    SendClientMessage(playerid, "Name: {PlayerName(playerid)} | HP: {GetPlayerHealth(playerid)} | Armour: {GetPlayerArmour(playerid)} | Money: {GetPlayerMoney(playerid)} | Score: {GetPlayerScore(playerid)}");
 };
 
 player::command("/tp", float x, float y, float z) {
-    self.set_position(x, y, z);
-    self.message("Teleported to {x}, {y}, {z}.");
+    SetPlayerPos(playerid, x, y, z);
+    SendClientMessage(playerid, "Teleported to {x}, {y}, {z}.");
 };
 
 player::command("/pay", Player target, int amount) {
     if (target == null) {
-        self.message("Player not found.");
+        SendClientMessage(playerid, "Player not found.");
         return;
     }
     if (amount <= 0) {
-        self.message("Amount must be > 0.");
+        SendClientMessage(playerid, "Amount must be > 0.");
         return;
     }
-    if (self.money < amount) {
-        self.message("Not enough money.");
+    if (GetPlayerMoney(playerid) < amount) {
+        SendClientMessage(playerid, "Not enough money.");
         return;
     }
-    self.money -= amount;
-    target.money += amount;
-    self.message("Paid {amount} to {target.name}.");
-    target.message("Received {amount} from {self.name}.");
+    GivePlayerMoney(playerid, -(amount));
+    GivePlayerMoney(target, amount);
+    SendClientMessage(playerid, "Paid {amount} to {PlayerName(target)}.");
+    SendClientMessage(target, "Received {amount} from {PlayerName(playerid)}.");
 };
 
 player::command("/money", int amount) {
-    self.money += amount;
-    self.message("Money changed by {amount}.");
+    GivePlayerMoney(playerid, amount);
+    SendClientMessage(playerid, "Money changed by {amount}.");
 };
 
 player::command("/skin", int skin) {
-    self.set_skin(skin);
-    self.message("Skin changed to {skin}.");
+    SetPlayerSkin(playerid, skin);
+    SendClientMessage(playerid, "Skin changed to {skin}.");
 };
 
 player::command("/giveweapon", int weapon, int ammo) {
-    self.give_weapon(weapon, ammo);
-    self.message("Weapon {weapon} given with {ammo} ammo.");
+    GivePlayerWeapon(playerid, weapon, ammo);
+    SendClientMessage(playerid, "Weapon {weapon} given with {ammo} ammo.");
 };
 
 player::command("/anim", string lib, string name) {
-    sa.ApplyPlayerAnimation(self.id, lib, name, 4.1, true, false, false, false, 0);
-    self.message("Animation {lib}/{name} applied.");
+    ApplyPlayerAnimation(playerid, lib, name, 4.1, true, false, false, false, 0);
+    SendClientMessage(playerid, "Animation {lib}/{name} applied.");
 };
 
 player::command("/dance") {
-    sa.SetPlayerSpecialAction(self.id, sa.SPECIAL_ACTION_DANCE1);
+    SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE1);
 };
 
 player::command("/camera") {
-    sa.TogglePlayerWidescreen(self.id, true);
-    self.message("Widescreen toggled.");
+    TogglePlayerWidescreen(playerid, true);
+    SendClientMessage(playerid, "Widescreen toggled.");
 };

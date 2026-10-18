@@ -29,6 +29,3 @@ system::config() {
 | `server.weather` | `int` | `weather` |
 | `server.web_url` | `string` | `weburl` |
 | `server.world_time` | `int` | `worldtime` |
-
-See the server distribution for the full `server.cfg` (rate limits,
-classes, streaming distance, etc.).

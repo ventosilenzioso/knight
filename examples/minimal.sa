@@ -6,14 +6,14 @@ system::config() {
 }
 
 system::start() {
-    player.add_class(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
 };
 
 player::connect() {
-    self.message("Welcome, {self.name}!");
+    SendClientMessage(playerid, "Welcome, {PlayerName(playerid)}!");
 };
 
 player::command("/heal") {
-    self.set_health(100.0);
-    self.message("Healed.");
+    SetPlayerHealth(playerid, 100.0);
+    SendClientMessage(playerid, "Healed.");
 };

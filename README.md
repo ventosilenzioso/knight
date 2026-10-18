@@ -1,18 +1,16 @@
 # Knight
 
 **Knight** is a statically-typed scripting language for the **Knight** SA-MP
-0.3.7 server (written in Go). Gamemodes are authored as a single `.sa` file: you
-declare typed event handlers, configure the server, and call engine natives
-through the `sa.*` namespace.
+0.3.7 server. Gamemodes are authored as a single `.sa` file: you declare
+callbacks, configure the server, and call native functions directly by name.
 
 This repository is the **public language distribution**: the language
-reference, a set of runnable examples, and prebuilt copies of the standalone
-`knight` validator. It intentionally does **not** contain the compiler
-implementation.
+reference, runnable examples, and prebuilt copies of the standalone `knight`
+validator. It intentionally does **not** contain the compiler implementation.
 
 ```
 bin/       prebuilt knight validator (linux/macos/windows)
-docs/      language, events, natives, built-ins, configuration
+docs/      language, callbacks, natives, built-ins, configuration
 examples/  runnable .sa gamemodes
 ```
 
@@ -20,16 +18,16 @@ examples/  runnable .sa gamemodes
 
 | Document | Contents |
 |---|---|
-| [`docs/language.md`](docs/language.md) | Syntax: declarations, types, operators, literals, strings, objects, commands |
+| [`docs/language.md`](docs/language.md) | Syntax: declarations, types, operators, literals, strings, commands |
+| [`docs/natives.md`](docs/natives.md) | All native functions with descriptions and engine constants |
+| [`docs/callbacks.md`](docs/callbacks.md) | Every callback: when it fires, parameters and return |
 | [`docs/builtins.md`](docs/builtins.md) | Standard library: conversions, math, strings, arrays, maps |
-| [`docs/events.md`](docs/events.md) | Every event: when it fires, parameters, `self` type and return |
-| [`docs/natives.md`](docs/natives.md) | Object fields/methods/factories with descriptions, `server.*`, and all 498 natives explained |
 | [`docs/configuration.md`](docs/configuration.md) | `system::config()` fields and their `server.cfg` keys |
 
 ## The validator
 
 `knight` checks a `.sa` file without running a server. It resolves
-`#include`s, lexes, parses, and type-checks against the engine's native API.
+`#include`s, lexes, parses, and type-checks.
 
 ```bash
 ./bin/knight-linux-amd64 -check examples/full.sa
@@ -42,34 +40,38 @@ Every shipped `examples/*.sa` passes `-check`.
 
 ## Hello, Knight
 
+Natives are global functions — no namespace, no `self`:
+
 ```knight
-player::connect() {
-    self.message("Welcome, {self.name}!");
+player::connect(int playerid) {
+    SendClientMessage(playerid, "Welcome, {PlayerName(playerid)}!");
 };
 
-player::spawn() {
-    self.health = 100.0;
+player::spawn(int playerid) {
+    SetPlayerHealth(playerid, 100.0);
 };
 ```
 
-Events are declared as `namespace::name(params) { ... };` — the trailing `;`
-is required. `self` is bound to the event's subject (e.g. the `Player` for
-`player::*` handlers). String literals interpolate expressions with `{...}`.
+Callbacks are declared as `namespace::name(params) { ... };` — the trailing `;`
+is required. Player-scoped callbacks receive `playerid` as their first
+argument. String literals interpolate expressions with `{...}`.
 
 ## Language at a glance
 
-- **Statically typed** — `int`, `float`, `string`, `bool`, engine object
-  handles (`Player`, `Vehicle`, `Object`, `TextDraw`), plus `array` and `map`.
+- **Statically typed** — `int`, `float`, `string`, `bool`, handle types, plus
+  `array` and `map`.
+- **Native-first API** — call `GetPlayerMoney(playerid)`,
+  `SetPlayerHealth(playerid, 100.0)`, `CreateVehicle(...)` directly.
 - **Typed bindings** — `let x = 1;`, optional annotation `let x: float = 1.0;`,
   reassignable and shared at module scope.
-- **Operators** — `and/or/not` or `&&/||/!`; `~=` and `!=` both mean "not
-  equal"; compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`).
+- **Operators** — `and/or/not` or `&&/||/!`; `~=` and `!=` mean "not equal";
+  compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`).
 - **Literals** — hex ints (`0xFF`), durations (`500ms`, `2s`), arrays
   (`[1,2,3]`), maps (`{ name: "CJ" }`).
-- **String interpolation** — `"score={player.score}"`, nested calls and strings
-  allowed, escape braces with `\{` / `\}`.
+- **String interpolation** — `"score={GetPlayerScore(playerid)}"`, nested calls
+  and strings allowed, escape braces with `\{` / `\}`.
 - **Includes** — `#include <knight>` is optional; custom files with
-  `#include <path.sa>` (cycles are detected).
+  `#include <path.sa>` (cycles detected).
 - **Commands** — `player::command("/give", int amount) { ... };`.
 - **Config block** — `system::config() { server.name = "..."; ... };`.
 
@@ -82,29 +84,20 @@ A standard library ships with every gamemode — conversions (`int`, `float`,
 `at`, `keys`, `values`, `has`, `del`), and utilities (`format`, `distance`).
 See [`docs/builtins.md`](docs/builtins.md).
 
-## Events
+## Callbacks
 
-Handlers are the entry points the server calls. The complete list is in
-[`docs/events.md`](docs/events.md); the namespaces are:
+Callbacks are the entry points the engine invokes. The complete list is in
+[`docs/callbacks.md`](docs/callbacks.md); the namespaces are:
 
 | Namespace | Purpose |
 |---|---|
 | `system` | `start`, `stop`, `config` |
 | `player` | connect/spawn/death/chat/command, vehicles, sync, aim, combat, class/spawn requests |
-| `vehicle` | factory `create`, `spawn`, `death`, `damage_status_update` |
+| `vehicle` | `create`, `spawn`, `death`, `damage_status_update` |
 | `world` | checkpoints, objects, areas, actors, pickups, actor damage |
 | `dialog` | `response` |
-| `textdraw` | factory `create`, `click` |
+| `textdraw` | `create`, `click` |
 | `timer` | `every` |
-
-## Native API
-
-Inside any handler you can call the engine directly as `sa.<Native>(...)`.
-The full SA-MP native set (498 functions) is available — players, vehicles,
-objects, pickups, dialogs, textdraws, gang zones, 3D labels, actors,
-checkpoints, database, crypto, streamer, formatting. The typed object surface
-(`player.health`, `vehicle.repair()`, `player.show_dialog(...)`) is documented
-in [`docs/natives.md`](docs/natives.md) alongside the native index.
 
 ## Examples
 

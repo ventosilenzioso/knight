@@ -1,7 +1,7 @@
 # Knight — Built-in Functions
 
 Built-ins are language-level functions available in every handler. They
-operate on plain values and are independent of the `sa.*` engine natives.
+operate on plain values and are independent of the engine natives.
 
 | Function | Returns | Description |
 |---|---|---|
@@ -54,10 +54,8 @@ operate on plain values and are independent of the `sa.*` engine natives.
 ## Example
 
 ```knight
-player::connect() {
-    let parts = split(self.name, "_");
-    let label = join(parts, " ");
-    self.message("Welcome, {upper(label)}!");
-    self.message("len={len(parts)} rand={random(1,6)}");
+player::connect(int playerid) {
+    let parts = split(PlayerName(playerid), "_");
+    SendClientMessage(playerid, "Welcome, {upper(join(parts, " "))}!");
 };
 ```

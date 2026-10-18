@@ -1,0 +1,596 @@
+# Knight — Callback Reference
+
+Callbacks are entry points the engine invokes. Player-scoped callbacks
+receive `playerid` (an `int`) as their first argument; use it with the global
+natives, for example `SetPlayerHealth(playerid, 100.0)`.
+
+Boolean-returning callbacks (`player::chat`, `player::request_class`,
+`player::request_spawn`) use the return value as a veto (fail-open on runtime
+error).
+
+## Summary
+
+| Callback | `playerid` | Returns | Description |
+|---|---|---|---|
+| `dialog::response` | yes | `—` | A player responded to a dialog; `accepted` is false on cancel, `listitem` is the selected row. |
+| `player::aim` | yes | `—` | A player is aiming; exposes camera mode/zoom and weapon state. |
+| `player::chat` | yes | `bool` | A player sent chat text; return true to relay it, false to swallow it. |
+| `player::command` | yes | `bool` | A player ran a command declared as `player::command("/name", ...)`. |
+| `player::connect` | yes | `—` | A player has connected; send a welcome, open a login dialog or set the camera. |
+| `player::death` | yes | `—` | A player died; `killer` is null when there is no attacker. |
+| `player::disconnect` | yes | `—` | A player has disconnected; clean up per-player state. |
+| `player::enter_vehicle` | yes | `—` | A player entered a vehicle (as driver or passenger). |
+| `player::exit_vehicle` | yes | `—` | A player exited a vehicle. |
+| `player::key_state_change` | yes | `—` | A player's key state changed; compare newkeys/oldkeys for press/release. |
+| `player::pickup` | yes | `—` | A player picked up a pickup. |
+| `player::request_class` | yes | `bool` | A player requested a class; return false to veto the selection. |
+| `player::request_class_done` | yes | `—` | The class response was sent to the client; apply the chosen skin/camera here. |
+| `player::request_spawn` | yes | `bool` | A player requested to spawn; return false to veto the spawn. |
+| `player::select_object` | yes | `—` | A player selected an object in the map editor. |
+| `player::spawn` | yes | `—` | A player has spawned; reset health/armour and initialise gameplay state. |
+| `player::state_change` | yes | `—` | A player's state changed (on foot, driving, dead, ...). |
+| `player::stats` | yes | `—` | A player's money/drunk statistics changed. |
+| `player::trailer_sync` | yes | `—` | A trailer synced to a vehicle. |
+| `player::unoccupied_sync` | yes | `—` | An unoccupied vehicle synced; raw vehicle health sample. |
+| `player::update` | yes | `—` | A player sync update arrived; raw position for anticheat and logic. |
+| `player::weapon_shot` | yes | `—` | A player fired a weapon; reports the hit type, target and coordinates. |
+| `system::start` | — | `—` | Fires once when the gamemode loads; set up globals, classes and world state here. |
+| `system::stop` | — | `—` | Fires when the server shuts down; release resources and persist state here. |
+| `textdraw::click` | yes | `—` | A player clicked a selectable text draw (65535 = cancel/empty area). |
+| `textdraw::create` | — | `TextDraw` | Factory event to construct a text draw; return the created TextDraw. |
+| `timer::every` | — | `—` | Periodic timer callback context; use with the timer natives. |
+| `vehicle::create` | — | `Vehicle` | Factory event to construct a vehicle; return the created Vehicle. |
+| `vehicle::damage_status_update` | — | `—` | A vehicle's panel/door/light/tyre damage changed. |
+| `vehicle::death` | — | `—` | A vehicle was destroyed; `killer` is the responsible player id. |
+| `vehicle::spawn` | — | `—` | A vehicle respawned. |
+| `world::actor_damage` | — | `—` | An actor took damage; reports attacker, amount, weapon and body part. |
+| `world::area_enter` | yes | `—` | A player entered a dynamic area. |
+| `world::area_leave` | yes | `—` | A player left a dynamic area. |
+| `world::checkpoint` | yes | `—` | A player entered their checkpoint. |
+| `world::checkpoint_leave` | yes | `—` | A player left their checkpoint. |
+| `world::object_create` | — | `Object` | Factory event to construct an object; return the created Object. |
+| `world::race_checkpoint_enter` | yes | `—` | A player entered their race checkpoint. |
+| `world::race_checkpoint_leave` | yes | `—` | A player left their race checkpoint. |
+
+## Details
+
+### `dialog::response`
+
+A player responded to a dialog; `accepted` is false on cancel, `listitem` is the selected row.
+
+```knight
+dialog::response(int playerid, int id, bool accepted, string input, int listitem) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `id` | `int` |
+| `accepted` | `bool` |
+| `input` | `string` |
+| `listitem` | `int` |
+
+Returns: `—`
+
+### `player::aim`
+
+A player is aiming; exposes camera mode/zoom and weapon state.
+
+```knight
+player::aim(int playerid, int camMode, int camZoom, int weaponState) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `camMode` | `int` |
+| `camZoom` | `int` |
+| `weaponState` | `int` |
+
+Returns: `—`
+
+### `player::chat`
+
+A player sent chat text; return true to relay it, false to swallow it.
+
+```knight
+player::chat(int playerid, string message) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `message` | `string` |
+
+Returns: `bool`
+
+### `player::command`
+
+A player ran a command declared as `player::command("/name", ...)`.
+
+```knight
+player::command(int playerid) { ... };
+```
+
+Returns: `bool`
+
+### `player::connect`
+
+A player has connected; send a welcome, open a login dialog or set the camera.
+
+```knight
+player::connect(int playerid) { ... };
+```
+
+Returns: `—`
+
+### `player::death`
+
+A player died; `killer` is null when there is no attacker.
+
+```knight
+player::death(int playerid, Player killer) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `killer` | `Player` |
+
+Returns: `—`
+
+### `player::disconnect`
+
+A player has disconnected; clean up per-player state.
+
+```knight
+player::disconnect(int playerid) { ... };
+```
+
+Returns: `—`
+
+### `player::enter_vehicle`
+
+A player entered a vehicle (as driver or passenger).
+
+```knight
+player::enter_vehicle(int playerid, Vehicle car) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `car` | `Vehicle` |
+
+Returns: `—`
+
+### `player::exit_vehicle`
+
+A player exited a vehicle.
+
+```knight
+player::exit_vehicle(int playerid, Vehicle car) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `car` | `Vehicle` |
+
+Returns: `—`
+
+### `player::key_state_change`
+
+A player's key state changed; compare newkeys/oldkeys for press/release.
+
+```knight
+player::key_state_change(int playerid, int newkeys, int oldkeys) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `newkeys` | `int` |
+| `oldkeys` | `int` |
+
+Returns: `—`
+
+### `player::pickup`
+
+A player picked up a pickup.
+
+```knight
+player::pickup(int playerid, int pickupid) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `pickupid` | `int` |
+
+Returns: `—`
+
+### `player::request_class`
+
+A player requested a class; return false to veto the selection.
+
+```knight
+player::request_class(int playerid, int classid) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `classid` | `int` |
+
+Returns: `bool`
+
+### `player::request_class_done`
+
+The class response was sent to the client; apply the chosen skin/camera here.
+
+```knight
+player::request_class_done(int playerid, int classid, int skin) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `classid` | `int` |
+| `skin` | `int` |
+
+Returns: `—`
+
+### `player::request_spawn`
+
+A player requested to spawn; return false to veto the spawn.
+
+```knight
+player::request_spawn(int playerid) { ... };
+```
+
+Returns: `bool`
+
+### `player::select_object`
+
+A player selected an object in the map editor.
+
+```knight
+player::select_object(int playerid, int objecttype, int objectid, int modelid, float x, float y, float z) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `objecttype` | `int` |
+| `objectid` | `int` |
+| `modelid` | `int` |
+| `x` | `float` |
+| `y` | `float` |
+| `z` | `float` |
+
+Returns: `—`
+
+### `player::spawn`
+
+A player has spawned; reset health/armour and initialise gameplay state.
+
+```knight
+player::spawn(int playerid) { ... };
+```
+
+Returns: `—`
+
+### `player::state_change`
+
+A player's state changed (on foot, driving, dead, ...).
+
+```knight
+player::state_change(int playerid, int newstate, int oldstate) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `newstate` | `int` |
+| `oldstate` | `int` |
+
+Returns: `—`
+
+### `player::stats`
+
+A player's money/drunk statistics changed.
+
+```knight
+player::stats(int playerid, int money, int drunk) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `money` | `int` |
+| `drunk` | `int` |
+
+Returns: `—`
+
+### `player::trailer_sync`
+
+A trailer synced to a vehicle.
+
+```knight
+player::trailer_sync(int playerid, int vid) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `vid` | `int` |
+
+Returns: `—`
+
+### `player::unoccupied_sync`
+
+An unoccupied vehicle synced; raw vehicle health sample.
+
+```knight
+player::unoccupied_sync(int playerid, int vid, float health) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `vid` | `int` |
+| `health` | `float` |
+
+Returns: `—`
+
+### `player::update`
+
+A player sync update arrived; raw position for anticheat and logic.
+
+```knight
+player::update(int playerid, float x, float y, float z) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `x` | `float` |
+| `y` | `float` |
+| `z` | `float` |
+
+Returns: `—`
+
+### `player::weapon_shot`
+
+A player fired a weapon; reports the hit type, target and coordinates.
+
+```knight
+player::weapon_shot(int playerid, int weaponid, int hittype, int hitid, float hx, float hy, float hz) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `weaponid` | `int` |
+| `hittype` | `int` |
+| `hitid` | `int` |
+| `hx` | `float` |
+| `hy` | `float` |
+| `hz` | `float` |
+
+Returns: `—`
+
+### `system::start`
+
+Fires once when the gamemode loads; set up globals, classes and world state here.
+
+```knight
+system::start() { ... };
+```
+
+Returns: `—`
+
+### `system::stop`
+
+Fires when the server shuts down; release resources and persist state here.
+
+```knight
+system::stop() { ... };
+```
+
+Returns: `—`
+
+### `textdraw::click`
+
+A player clicked a selectable text draw (65535 = cancel/empty area).
+
+```knight
+textdraw::click(int playerid, TextDraw td) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `td` | `TextDraw` |
+
+Returns: `—`
+
+### `textdraw::create`
+
+Factory event to construct a text draw; return the created TextDraw.
+
+```knight
+textdraw::create(int x, int y, string text) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `x` | `int` |
+| `y` | `int` |
+| `text` | `string` |
+
+Returns: `TextDraw`
+
+### `timer::every`
+
+Periodic timer callback context; use with the timer natives.
+
+```knight
+timer::every() { ... };
+```
+
+Returns: `—`
+
+### `vehicle::create`
+
+Factory event to construct a vehicle; return the created Vehicle.
+
+```knight
+vehicle::create(int model, float x, float y, float z) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `model` | `int` |
+| `x` | `float` |
+| `y` | `float` |
+| `z` | `float` |
+
+Returns: `Vehicle`
+
+### `vehicle::damage_status_update`
+
+A vehicle's panel/door/light/tyre damage changed.
+
+```knight
+vehicle::damage_status_update(int vid, int pid, int panels, int doors, int lights, int tyres) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `vid` | `int` |
+| `pid` | `int` |
+| `panels` | `int` |
+| `doors` | `int` |
+| `lights` | `int` |
+| `tyres` | `int` |
+
+Returns: `—`
+
+### `vehicle::death`
+
+A vehicle was destroyed; `killer` is the responsible player id.
+
+```knight
+vehicle::death(int vid, int killer) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `vid` | `int` |
+| `killer` | `int` |
+
+Returns: `—`
+
+### `vehicle::spawn`
+
+A vehicle respawned.
+
+```knight
+vehicle::spawn() { ... };
+```
+
+Returns: `—`
+
+### `world::actor_damage`
+
+An actor took damage; reports attacker, amount, weapon and body part.
+
+```knight
+world::actor_damage(int actorid, int playerid, float amount, int weaponid, int bodypart) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `actorid` | `int` |
+| `playerid` | `int` |
+| `amount` | `float` |
+| `weaponid` | `int` |
+| `bodypart` | `int` |
+
+Returns: `—`
+
+### `world::area_enter`
+
+A player entered a dynamic area.
+
+```knight
+world::area_enter(int playerid, int area) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `area` | `int` |
+
+Returns: `—`
+
+### `world::area_leave`
+
+A player left a dynamic area.
+
+```knight
+world::area_leave(int playerid, int area) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `area` | `int` |
+
+Returns: `—`
+
+### `world::checkpoint`
+
+A player entered their checkpoint.
+
+```knight
+world::checkpoint(int playerid, float x, float y, float z) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `x` | `float` |
+| `y` | `float` |
+| `z` | `float` |
+
+Returns: `—`
+
+### `world::checkpoint_leave`
+
+A player left their checkpoint.
+
+```knight
+world::checkpoint_leave(int playerid) { ... };
+```
+
+Returns: `—`
+
+### `world::object_create`
+
+Factory event to construct an object; return the created Object.
+
+```knight
+world::object_create(int model, float x, float y, float z) { ... };
+```
+
+| Parameter | Type |
+|---|---|
+| `model` | `int` |
+| `x` | `float` |
+| `y` | `float` |
+| `z` | `float` |
+
+Returns: `Object`
+
+### `world::race_checkpoint_enter`
+
+A player entered their race checkpoint.
+
+```knight
+world::race_checkpoint_enter(int playerid) { ... };
+```
+
+Returns: `—`
+
+### `world::race_checkpoint_leave`
+
+A player left their race checkpoint.
+
+```knight
+world::race_checkpoint_leave(int playerid) { ... };
+```
+
+Returns: `—`
+

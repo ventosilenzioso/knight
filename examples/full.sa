@@ -14,116 +14,117 @@ system::config() {
 };
 
 system::start() {
-    server.set_gamemode_text("Knight RP v1");
-    server.set_world_time(12);
-    server.set_weather(10);
-    player.add_class(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
-    player.add_class(7, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
-    sa.DisableInteriorEnterExits();
+    SetGameModeText("Knight RP v1");
+    SetWorldTime(12);
+    SetWeather(10);
+    AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(7, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    DisableInteriorEnterExits();
 };
 
 player::connect() {
-    self.message("Selamat datang, {self.name}!");
-    self.set_health(100.0);
-    self.set_armour(0.0);
-    self.send_score(0);
+    SendClientMessage(playerid, "Selamat datang, {PlayerName(playerid)}!");
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 0.0);
+    SetPlayerScore(playerid, 0);
 };
 
 player::spawn() {
-    self.set_health(100.0);
-    self.set_armour(50.0);
-    self.message("Kamu spawn. Skor: {self.score}");
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 50.0);
+    SendClientMessage(playerid, "Kamu spawn. Skor: {GetPlayerScore(playerid)}");
 };
 
 player::death(Player killer) {
     if (killer != null) {
-        self.message("Kamu dibunuh oleh {killer.name}");
-        killer.money += 100;
+        SendClientMessage(playerid, "Kamu dibunuh oleh {PlayerName(killer)}");
+        GivePlayerMoney(killer, 100);
     } else {
-        self.message("Kamu mati.");
+        SendClientMessage(playerid, "Kamu mati.");
     }
 };
 
 player::chat(string message) {
     if (message == "hi") {
-        self.message("Halo juga!");
+        SendClientMessage(playerid, "Halo juga!");
         return false;
     }
     return true;
 };
 
 player::command("/heal") {
-    self.set_health(100.0);
-    self.set_armour(100.0);
-    self.message("Diheal.");
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 100.0);
+    SendClientMessage(playerid, "Diheal.");
 };
 
 player::command("/pay", Player target, int amount) {
     if (target == null) {
-        self.message("Pemain tidak ditemukan.");
+        SendClientMessage(playerid, "Pemain tidak ditemukan.");
         return;
     }
     if (amount <= 0) {
-        self.message("Jumlah harus > 0.");
+        SendClientMessage(playerid, "Jumlah harus > 0.");
         return;
     }
-    if (self.money < amount) {
-        self.message("Uang tidak cukup.");
+    if (GetPlayerMoney(playerid) < amount) {
+        SendClientMessage(playerid, "Uang tidak cukup.");
         return;
     }
-    self.money -= amount;
-    target.money += amount;
-    self.message("Kamu membayar {amount} ke {target.name}.");
-    target.message("Kamu menerima {amount} dari {self.name}.");
+    GivePlayerMoney(playerid, -(amount));
+    GivePlayerMoney(target, amount);
+    SendClientMessage(playerid, "Kamu membayar {amount} ke {PlayerName(target)}.");
+    SendClientMessage(target, "Kamu menerima {amount} dari {PlayerName(playerid)}.");
 };
 
 player::command("/tp", float x, float y, float z) {
-    self.set_position(x, y, z);
-    self.message("Teleport ke {x}, {y}, {z}.");
+    SetPlayerPos(playerid, x, y, z);
+    SendClientMessage(playerid, "Teleport ke {x}, {y}, {z}.");
 };
 
 player::command("/stats") {
-    self.message("Nama: {self.name} | HP: {self.health} | Uang: {self.money} | Skor: {self.score}");
+    SendClientMessage(playerid, "Nama: {PlayerName(playerid)} | HP: {GetPlayerHealth(playerid)} | Uang: {GetPlayerMoney(playerid)} | Skor: {GetPlayerScore(playerid)}");
 };
 
 player::enter_vehicle(Vehicle car) {
-    self.message("Masuk kendaraan {car.model}.");
+    SendClientMessage(playerid, "Masuk kendaraan {car.model}.");
 };
 
 player::exit_vehicle(Vehicle car) {
-    self.message("Keluar kendaraan.");
+    SendClientMessage(playerid, "Keluar kendaraan.");
 };
 
 vehicle::create(int model, float x, float y, float z) {
-    let v = Vehicle.create(model, x, y, z, 0.0, 1, 1);
-    return v;
+    return CreateVehicle(model, x, y, z, 0.0, 1, 1);
 };
 
 world::checkpoint(float x, float y, float z) {
-    self.message("Checkpoint tercapai di {x}, {y}, {z}.");
-    self.disable_checkpoint();
+    SendClientMessage(playerid, "Checkpoint tercapai di {x}, {y}, {z}.");
+    DisablePlayerCheckpoint(playerid);
 };
 
 world::object_create(int model, float x, float y, float z) {
-    let obj = Object.create(model, x, y, z, 0.0, 0.0, 0.0, 200.0);
-    return obj;
+    return CreateObject(model, x, y, z, 0.0, 0.0, 0.0, 200.0);
 };
 
+let next_td = 0;
 textdraw::create(int x, int y, string text) {
-    let td = TextDraw.create(x, y, text);
+    let td = next_td;
+    next_td = next_td + 1;
+    TextDrawCreate(td, x, y, text);
     return td;
 };
 
 textdraw::click(TextDraw td) {
-    self.message("TextDraw diklik.");
+    SendClientMessage(playerid, "TextDraw diklik.");
 };
 
 dialog::response(int id, bool accepted, string input) {
     if (id == 100 && accepted) {
-        self.message("Input: {input}");
+        SendClientMessage(playerid, "Input: {input}");
     }
 };
 
 timer::every(60s) {
-    self.message("Satu menit berlalu.");
+    SendClientMessageToAll("Satu menit berlalu.");
 };

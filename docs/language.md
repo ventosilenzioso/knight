@@ -2,43 +2,41 @@
 
 Knight is a small, statically-typed language. A gamemode is one `.sa` file
 (plus optional includes). The validator resolves includes, lexes, parses and
-type-checks every handler and native call against the engine API.
+type-checks the file.
+
+The API is **native-first**: gameplay calls are plain global functions like
+`SetPlayerHealth(playerid, 100.0)` and `GetPlayerMoney(playerid)`. Callbacks
+receive `playerid` explicitly; there is no `self`, no `sa.` prefix, and no
+method syntax.
 
 ---
 
 ## 1. Files and includes
 
 - A gamemode may be a **single self-contained `.sa` file**.
-- `#include <knight>` is **optional**; all `sa.*` natives and object types are
-  built in.
+- `#include <knight>` is **optional**; all natives and types are built in.
 - Custom includes: `#include <path/to/file.sa>`, resolved relative to the
-  including file. Circular includes are rejected with an error.
+  including file. Circular includes are rejected.
 - Comments: `// line` and `/* block */`.
 
 ---
 
 ## 2. Declarations
 
-Top-level declarations:
-
 ```knight
 system::config() { ... };          // server.cfg configuration
-namespace::event(params) { ... };  // engine event handler
-function name(params) { ... };     // plain helper function
-let name = expr;                   // module-level variable
+namespace::callback(params) { ... }; // engine callback
+function name(params) { ... };     // helper function
+let name = expr;                   // variable
 ```
 
-Event handlers are dispatched by the server; `function` helpers are ordinary
-callables that can also be invoked by name from async database callbacks and
-timers.
+> The trailing `;` after a callback/function/config block **is required**.
 
-> The trailing `;` after an event/function/config block **is required**.
-
-The alternate event form is also accepted:
+The alternate callback form is also accepted:
 
 ```knight
-if (player::connect()) {
-    ...
+if (player::connect(int playerid)) {
+    SendClientMessage(playerid, "Hello!");
 };
 ```
 
@@ -52,17 +50,18 @@ if (player::connect()) {
 | `float` | 64-bit float |
 | `string` | UTF-8 text |
 | `bool` | `true` / `false` |
-| `Player`, `Vehicle`, `Object`, `TextDraw` | engine object handles |
+| `Player`, `Vehicle`, `Object`, `TextDraw` | engine handle types (parameters) |
 | `array`, `map` | ordered list / string-keyed dictionary |
 | `null` | absence of a value |
 
-Types are inferred for `let`; annotate explicitly when needed:
+`playerid` is an `int`. Handle types (`Player`, `Vehicle`, ...) are used to
+type callback parameters; natives take and return plain ids.
 
 ```knight
 let score: int = 0;
-let speed = 1.5;     // float
-let name = "CJ";     // string
-let classid = 0x10;  // 16
+let speed = 1.5;
+let name = "CJ";
+let classid = 0x10;
 ```
 
 ---
@@ -70,20 +69,18 @@ let classid = 0x10;  // 16
 ## 4. Variables and scope
 
 ```knight
-let hp = 100;        // declare
-hp = 90;             // reassign
-hp += 5;             // compound assignment (+= -= *= /= %=)
+let hp = 100;
+hp = 90;
+hp += 5;      // also -= *= /= %=
 ```
 
-`let` creates a variable that **can be reassigned** (it is a binding, not a
-constant). Module-level variables are shared across handlers and live for the
-whole server lifetime — the usual place for gamemode state.
+`let` creates a reassignable binding. Module-level variables are shared across
+callbacks and live for the whole server lifetime.
 
 ```knight
 let totalPlayers = 0;
-
-player::connect() { totalPlayers += 1; };
-player::disconnect() { totalPlayers -= 1; };
+player::connect(int playerid) { totalPlayers += 1; };
+player::disconnect(int playerid) { totalPlayers -= 1; };
 ```
 
 ---
@@ -97,9 +94,6 @@ player::disconnect() { totalPlayers -= 1; };
 | `< <= > >=` | comparison |
 | `and or not` | logical, also `&&`, `\|\|`, `!` |
 | `+= -= *= /= %=` | compound assignment |
-
-The resolver checks operand/assignment types; assigning a `string` to an
-`int` field is a compile error.
 
 ---
 
@@ -115,96 +109,82 @@ if (cond) {
 }
 ```
 
-`return expr;` returns from the current function/handler. Handlers with a
-`bool` return type use it as a veto — for example `player::request_spawn()`
-returning `false` blocks the spawn.
+`return expr;` returns from the callback. Boolean callbacks use the return
+value as a veto — `player::request_spawn` returning `false` blocks the spawn.
 
-> There is no `while`/`for` loop in the current language version. Iterate over
-> collections with the built-ins `len`, `at` and hand-written counters (see
-> `builtins.md`).
+> There is no `while`/`for` loop in this version. Iterate with `len`/`at` and a
+> counter (see [`builtins.md`](builtins.md)).
 
 ---
 
 ## 7. Literals
 
 ```knight
-let n = 42;              // int
-let h = 0xFF00FF00;      // hex int
-let f = 3.14;            // float
-let b = true;            // bool
-let z = null;            // null
-let ms = 500ms;          // duration literal (500ms, 2s, 3m, 1h) -> milliseconds int
-let a = [1, 2, 3];       // array
-let m = { "hp": 100, name: "CJ" };  // map (bare ident keys are strings)
-```
-
-Array and map literals can be indexed and assigned:
-
-```knight
+let n = 42;
+let h = 0xFF00FF00;
+let f = 3.14;
+let b = true;
+let z = null;
+let ms = 500ms;                  // duration -> milliseconds
+let a = [1, 2, 3];               // array
+let m = { "hp": 100, name: "CJ" }; // map
 a[0] = 10;
 m["score"] = 5;
-let first = a[0];
 ```
+
+Engine constants are bare integers: `SPECIAL_ACTION_DANCE1`, `BONE_HEAD`,
+`MAX_PLAYERS`, `INVALID_PLAYER_ID` (see [`natives.md`](natives.md)).
 
 ---
 
 ## 8. Strings and interpolation
 
 ```knight
-let who = "CJ";
-self.message("Welcome, {who}!");           // any expression inside { }
-self.message("Score: {player.score}");     // member access
-self.message("Uppercase: {upper(who)}");   // nested calls and "nested strings"
-self.message("Literal braces: \{ \}");      // escaped
+let who = PlayerName(playerid);
+SendClientMessage(playerid, "Welcome, {who}!");
+SendClientMessage(playerid, "Uppercase: {upper(who)}");
+SendClientMessage(playerid, "Literal braces: \{ \}");
 ```
 
 Escapes: `\n`, `\t`, `\r`, `\\`, `\"`, `\{`, `\}`. Interpolation may contain
-parentheses and nested string literals.
+calls, parentheses and nested string literals.
 
 ---
 
-## 9. Objects, fields, methods, factories
+## 9. Calling natives
 
-Engine objects expose typed fields and methods:
+Natives are global functions:
 
 ```knight
-player::spawn() {
-    self.health = 100.0;                 // field write
-    self.set_position(1958.4, 1343.2, 15.4);
-    let x = self.x;                      // field read
-    self.message("x = {x}");
+player::spawn(int playerid) {
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 50.0);
+    SendClientMessage(playerid, "HP {GetPlayerHealth(playerid)}");
 };
 
-world::object_create(int model, float x, float y, float z) {
-    let obj = Object.create(model, x, y, z, 0.0, 0.0, 0.0, 200.0);
-    obj.set_rotation(0.0, 0.0, 90.0);
-    return obj;
+player::command("/give", int amount) {
+    GivePlayerMoney(playerid, amount);
 };
 ```
 
-The full field/method catalogue is in [`natives.md`](natives.md). The raw
-`sa.*` native set is available alongside the typed surface, e.g.
-`sa.SetPlayerHealth(self.id, 100.0)`.
+The full list is in [`natives.md`](natives.md).
 
 ---
 
 ## 10. Commands
 
-Declare a command handler with a leading `/name` literal and typed arguments:
-
 ```knight
 player::command("/heal") {
-    self.health = 100.0;
+    SetPlayerHealth(playerid, 100.0);
 };
 
 player::command("/give", int amount, string reason) {
-    self.money += amount;
-    self.message("Got {amount}: {reason}");
+    GivePlayerMoney(playerid, amount);
+    SendClientMessage(playerid, "Got {amount}: {reason}");
 };
 ```
 
-Command arguments are parsed and bound by declared type (`int`, `float`,
-`string`).
+Arguments are parsed and bound by declared type.
 
 ---
 
@@ -217,55 +197,51 @@ system::config() {
     server.name = "My Server";
     server.max_players = 100;
     server.port = 7777;
-    server.weather = 10;
-    server.world_time = 12;
 };
 ```
 
-All supported keys are listed in [`configuration.md`](configuration.md).
+All keys are in [`configuration.md`](configuration.md).
 
 ---
 
 ## 12. Built-in functions
 
-A standard library is available without any include — conversions, predicates,
-math, string and collection helpers. See [`builtins.md`](builtins.md).
+Language helpers (conversions, math, strings, arrays, maps) are available
+without any include. See [`builtins.md`](builtins.md).
 
 ```knight
-let parts = split(player.name, "_");
-player.message("Hello {upper(join(parts, " "))}, roll {random(1,6)}");
+let parts = split(PlayerName(playerid), "_");
+SendClientMessage(playerid, "Hello {upper(join(parts, " "))}!");
 ```
 
 ---
 
-## 13. Events
+## 13. Callbacks
 
-The complete event list with parameters and `self` type is in
-[`events.md`](events.md). Examples:
+The complete callback list with parameters is in
+[`callbacks.md`](callbacks.md).
 
 ```knight
 system::start() { ... };
-player::connect() { ... };
-player::chat(string message) { return true; };   // true = relay as chat
-dialog::response(int id, bool accepted, string input, int listitem) { ... };
+player::connect(int playerid) { SendClientMessage(playerid, "Hi!"); };
+player::chat(int playerid, string message) { return true; }; // relay chat
+dialog::response(int playerid, int id, bool accepted, string input, int listitem) { ... };
 ```
 
 ---
 
 ## 14. Helpers, timers and async results
 
-Named `function` helpers can be invoked by the engine as callbacks:
-
 ```knight
 function onDbResult(result, err) {
     if (err == "") {
-        let rows = sa.cache_get_row_count(result);
-        sa.Log("rows=" + str(rows));
+        let rows = cache_get_row_count(result);
+        Log("rows=" + str(rows));
     }
 }
 
-let db = sa.sqlite_open("scriptfiles/data.db");
-sa.sqlite_query_async(db, "onDbResult", "SELECT * FROM accounts");
+let db = sqlite_open("scriptfiles/data.db");
+sqlite_query_async(db, "onDbResult", "SELECT * FROM accounts");
 ```
 
 ---
@@ -275,7 +251,7 @@ sa.sqlite_query_async(db, "onDbResult", "SELECT * FROM accounts");
 - Parse/type errors are reported as `line:column: message`; the validator exits
   non-zero.
 - `-check` runs the full preprocess/parse/resolve pass.
-- `-ast` prints the parsed syntax tree for tooling.
+- `-ast` prints the parsed syntax tree.
 
 ```bash
 knight -check examples/full.sa
