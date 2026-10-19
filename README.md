@@ -114,6 +114,16 @@ Run any of them with the Knight server:
 knight-server -cfg server.cfg -gamemode examples/full.sa
 ```
 
+## Custom models (SA-MP 0.3.DL)
+
+0.3.DL clients can download custom skins (ids 20001–30000) and objects
+(−30000..−1000). Register them with `AddCharModel` / `AddSimpleModel`; clients
+request files from `artpath`/`artwork_cdn`, and `player::request_download` /
+`player::finished_downloading` let the gamemode control the flow. 0.3.7 clients
+are supported unchanged: they never receive model data and fall back to the
+base model. See [`docs/natives.md`](docs/natives.md) and
+[`docs/callbacks.md`](docs/callbacks.md).
+
 ## Verifying
 
 ```bash

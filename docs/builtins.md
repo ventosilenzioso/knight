@@ -1,13 +1,12 @@
 # Knight — Built-in Functions
 
-Built-ins are language-level functions available in every handler. They
-operate on plain values and are independent of the engine natives.
+Built-ins are language-level functions available in every handler.
 
 | Function | Returns | Description |
 |---|---|---|
 | `abs(any)` | `float` | Absolute value. |
-| `array(...)` | `array` | Construct an array from arguments. |
-| `at(array, any)` | `any` | Indexed access (array index or map key). |
+| `array(...)` | `array` | Construct an array. |
+| `at(array, any)` | `any` | Indexed access. |
 | `bool(any)` | `bool` | Truthiness conversion. |
 | `ceil(any)` | `int` | Round up. |
 | `clamp(any, any, any)` | `float` | Clamp a value into [lo, hi]. |
@@ -17,7 +16,7 @@ operate on plain values and are independent of the engine natives.
 | `ends_with(any, any)` | `bool` | Suffix test. |
 | `float(any)` | `float` | Parse/convert to float. |
 | `floor(any)` | `int` | Round down. |
-| `format(any, ...)` | `string` | Substitute %s/%d/%f/%v placeholders. |
+| `format(any, ...)` | `string` | Substitute %s/%d/%f/%v. |
 | `has(map, any)` | `bool` | Map key existence. |
 | `int(any)` | `int` | Parse/convert to integer. |
 | `is_array(any)` | `bool` | True for array. |
@@ -30,16 +29,16 @@ operate on plain values and are independent of the engine natives.
 | `keys(map)` | `array` | Array of map keys. |
 | `len(any)` | `int` | Length of a string, array, or map. |
 | `lower(any)` | `string` | Lowercase. |
-| `map(...)` | `map` | Construct a map from key/value pairs. |
+| `map(...)` | `map` | Construct a map. |
 | `max(any, any)` | `float` | Larger of two values. |
 | `min(any, any)` | `float` | Smaller of two values. |
-| `pop(array)` | `any` | Last element of an array. |
+| `pop(array)` | `any` | Last element. |
 | `pow(any, any)` | `float` | a raised to b. |
 | `push(array, any)` | `array` | Append a value and return the array. |
-| `random(any, any)` | `int` | Random integer (no arg, 0..n-1, or lo..hi). |
+| `random(any, any)` | `int` | Random integer. |
 | `replace(any, any, any)` | `string` | Replace all occurrences. |
 | `round(any)` | `int` | Nearest integer. |
-| `shift(array)` | `any` | First element of an array. |
+| `shift(array)` | `any` | First element. |
 | `split(any, any)` | `array` | Split a string into an array. |
 | `sqrt(any)` | `float` | Square root. |
 | `starts_with(any, any)` | `bool` | Prefix test. |
@@ -50,12 +49,3 @@ operate on plain values and are independent of the engine natives.
 | `typeof(any)` | `string` | Type name of a value. |
 | `upper(any)` | `string` | Uppercase. |
 | `values(map)` | `array` | Array of map values. |
-
-## Example
-
-```knight
-player::connect(int playerid) {
-    let parts = split(PlayerName(playerid), "_");
-    SendClientMessage(playerid, "Welcome, {upper(join(parts, " "))}!");
-};
-```

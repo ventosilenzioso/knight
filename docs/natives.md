@@ -1,16 +1,8 @@
 # Knight — Native Function Reference
 
-Native functions are the primary API. Call them by their global name —
-no namespace or prefix:
+Natives are global functions: `SetPlayerHealth(playerid, 100.0)`.
 
-```knight
-player::spawn(int playerid) {
-    SetPlayerHealth(playerid, 100.0);
-    SendClientMessage(playerid, "Spawned with {GetPlayerMoney(playerid)} money.");
-};
-```
-
-There are **507** natives.
+There are **508** natives.
 
 | Native | Description |
 |---|---|
@@ -265,6 +257,7 @@ There are **507** natives.
 | `IsPlayerStreamedIn` | Whether a player is streamed to another. |
 | `IsTrailerAttachedToVehicle` | Whether a trailer is attached. |
 | `IsValidActor` | Whether an actor id is valid. |
+| `IsValidCustomModel` | Whether an id is a registered custom skin or object id. |
 | `IsValidDynamic3DTextLabel` | Whether a dynamic 3D label is valid. |
 | `IsValidDynamicActor` | Whether a dynamic actor is valid. |
 | `IsValidDynamicArea` | Whether a dynamic area is valid. |
@@ -524,8 +517,6 @@ There are **507** natives.
 
 ## Engine constants
 
-These identifiers are available directly as `int` values.
-
 | Constant | Value |
 |---|---|
 | `BONE_HEAD` | `2` |
@@ -533,9 +524,16 @@ These identifiers are available directly as `int` values.
 | `BONE_PELVIS` | `1` |
 | `BONE_RIGHT_HAND` | `6` |
 | `BONE_SPINE` | `1` |
+| `DOWNLOAD_REQUEST_EMPTY` | `0` |
+| `DOWNLOAD_REQUEST_MODEL_FILE` | `1` |
+| `DOWNLOAD_REQUEST_TEXTURE_FILE` | `2` |
 | `INVALID_PLAYER_ID` | `65535` |
 | `INVALID_VEHICLE_ID` | `65535` |
+| `MAX_CUSTOM_OBJECT_ID` | `-1000` |
+| `MAX_CUSTOM_SKIN_ID` | `30000` |
 | `MAX_PLAYERS` | `1000` |
+| `MIN_CUSTOM_OBJECT_ID` | `-30000` |
+| `MIN_CUSTOM_SKIN_ID` | `20001` |
 | `SPECIAL_ACTION_DANCE1` | `5` |
 | `SPECIAL_ACTION_HANDSUP` | `2` |
 | `SPECIAL_ACTION_NONE` | `0` |

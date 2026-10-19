@@ -1,12 +1,6 @@
 # Knight — Callback Reference
 
-Callbacks are entry points the engine invokes. Player-scoped callbacks
-receive `playerid` (an `int`) as their first argument; use it with the global
-natives, for example `SetPlayerHealth(playerid, 100.0)`.
-
-Boolean-returning callbacks (`player::chat`, `player::request_class`,
-`player::request_spawn`) use the return value as a veto (fail-open on runtime
-error).
+Callbacks receive `playerid` (int) as their first argument. Use global natives.
 
 ## Summary
 
@@ -21,10 +15,12 @@ error).
 | `player::disconnect` | yes | `—` | A player has disconnected; clean up per-player state. |
 | `player::enter_vehicle` | yes | `—` | A player entered a vehicle (as driver or passenger). |
 | `player::exit_vehicle` | yes | `—` | A player exited a vehicle. |
+| `player::finished_downloading` | yes | `—` | A 0.3.DL client finished downloading custom models for a virtual world. |
 | `player::key_state_change` | yes | `—` | A player's key state changed; compare newkeys/oldkeys for press/release. |
 | `player::pickup` | yes | `—` | A player picked up a pickup. |
 | `player::request_class` | yes | `bool` | A player requested a class; return false to veto the selection. |
 | `player::request_class_done` | yes | `—` | The class response was sent to the client; apply the chosen skin/camera here. |
+| `player::request_download` | yes | `bool` | A 0.3.DL client requested a custom model/texture; return false to deny, or call RedirectDownload. |
 | `player::request_spawn` | yes | `bool` | A player requested to spawn; return false to veto the spawn. |
 | `player::select_object` | yes | `—` | A player selected an object in the map editor. |
 | `player::spawn` | yes | `—` | A player has spawned; reset health/armour and initialise gameplay state. |
@@ -62,13 +58,6 @@ A player responded to a dialog; `accepted` is false on cancel, `listitem` is the
 dialog::response(int playerid, int id, bool accepted, string input, int listitem) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `id` | `int` |
-| `accepted` | `bool` |
-| `input` | `string` |
-| `listitem` | `int` |
-
 Returns: `—`
 
 ### `player::aim`
@@ -79,12 +68,6 @@ A player is aiming; exposes camera mode/zoom and weapon state.
 player::aim(int playerid, int camMode, int camZoom, int weaponState) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `camMode` | `int` |
-| `camZoom` | `int` |
-| `weaponState` | `int` |
-
 Returns: `—`
 
 ### `player::chat`
@@ -94,10 +77,6 @@ A player sent chat text; return true to relay it, false to swallow it.
 ```knight
 player::chat(int playerid, string message) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `message` | `string` |
 
 Returns: `bool`
 
@@ -129,10 +108,6 @@ A player died; `killer` is null when there is no attacker.
 player::death(int playerid, Player killer) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `killer` | `Player` |
-
 Returns: `—`
 
 ### `player::disconnect`
@@ -153,10 +128,6 @@ A player entered a vehicle (as driver or passenger).
 player::enter_vehicle(int playerid, Vehicle car) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `car` | `Vehicle` |
-
 Returns: `—`
 
 ### `player::exit_vehicle`
@@ -167,9 +138,15 @@ A player exited a vehicle.
 player::exit_vehicle(int playerid, Vehicle car) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `car` | `Vehicle` |
+Returns: `—`
+
+### `player::finished_downloading`
+
+A 0.3.DL client finished downloading custom models for a virtual world.
+
+```knight
+player::finished_downloading(int playerid, int virtualworld) { ... };
+```
 
 Returns: `—`
 
@@ -181,11 +158,6 @@ A player's key state changed; compare newkeys/oldkeys for press/release.
 player::key_state_change(int playerid, int newkeys, int oldkeys) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `newkeys` | `int` |
-| `oldkeys` | `int` |
-
 Returns: `—`
 
 ### `player::pickup`
@@ -195,10 +167,6 @@ A player picked up a pickup.
 ```knight
 player::pickup(int playerid, int pickupid) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `pickupid` | `int` |
 
 Returns: `—`
 
@@ -210,10 +178,6 @@ A player requested a class; return false to veto the selection.
 player::request_class(int playerid, int classid) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `classid` | `int` |
-
 Returns: `bool`
 
 ### `player::request_class_done`
@@ -224,12 +188,17 @@ The class response was sent to the client; apply the chosen skin/camera here.
 player::request_class_done(int playerid, int classid, int skin) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `classid` | `int` |
-| `skin` | `int` |
-
 Returns: `—`
+
+### `player::request_download`
+
+A 0.3.DL client requested a custom model/texture; return false to deny, or call RedirectDownload.
+
+```knight
+player::request_download(int playerid, int type, int crc) { ... };
+```
+
+Returns: `bool`
 
 ### `player::request_spawn`
 
@@ -248,15 +217,6 @@ A player selected an object in the map editor.
 ```knight
 player::select_object(int playerid, int objecttype, int objectid, int modelid, float x, float y, float z) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `objecttype` | `int` |
-| `objectid` | `int` |
-| `modelid` | `int` |
-| `x` | `float` |
-| `y` | `float` |
-| `z` | `float` |
 
 Returns: `—`
 
@@ -278,11 +238,6 @@ A player's state changed (on foot, driving, dead, ...).
 player::state_change(int playerid, int newstate, int oldstate) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `newstate` | `int` |
-| `oldstate` | `int` |
-
 Returns: `—`
 
 ### `player::stats`
@@ -292,11 +247,6 @@ A player's money/drunk statistics changed.
 ```knight
 player::stats(int playerid, int money, int drunk) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `money` | `int` |
-| `drunk` | `int` |
 
 Returns: `—`
 
@@ -308,10 +258,6 @@ A trailer synced to a vehicle.
 player::trailer_sync(int playerid, int vid) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `vid` | `int` |
-
 Returns: `—`
 
 ### `player::unoccupied_sync`
@@ -321,11 +267,6 @@ An unoccupied vehicle synced; raw vehicle health sample.
 ```knight
 player::unoccupied_sync(int playerid, int vid, float health) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `vid` | `int` |
-| `health` | `float` |
 
 Returns: `—`
 
@@ -337,12 +278,6 @@ A player sync update arrived; raw position for anticheat and logic.
 player::update(int playerid, float x, float y, float z) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `x` | `float` |
-| `y` | `float` |
-| `z` | `float` |
-
 Returns: `—`
 
 ### `player::weapon_shot`
@@ -352,15 +287,6 @@ A player fired a weapon; reports the hit type, target and coordinates.
 ```knight
 player::weapon_shot(int playerid, int weaponid, int hittype, int hitid, float hx, float hy, float hz) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `weaponid` | `int` |
-| `hittype` | `int` |
-| `hitid` | `int` |
-| `hx` | `float` |
-| `hy` | `float` |
-| `hz` | `float` |
 
 Returns: `—`
 
@@ -392,10 +318,6 @@ A player clicked a selectable text draw (65535 = cancel/empty area).
 textdraw::click(int playerid, TextDraw td) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `td` | `TextDraw` |
-
 Returns: `—`
 
 ### `textdraw::create`
@@ -405,12 +327,6 @@ Factory event to construct a text draw; return the created TextDraw.
 ```knight
 textdraw::create(int x, int y, string text) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `x` | `int` |
-| `y` | `int` |
-| `text` | `string` |
 
 Returns: `TextDraw`
 
@@ -432,13 +348,6 @@ Factory event to construct a vehicle; return the created Vehicle.
 vehicle::create(int model, float x, float y, float z) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `model` | `int` |
-| `x` | `float` |
-| `y` | `float` |
-| `z` | `float` |
-
 Returns: `Vehicle`
 
 ### `vehicle::damage_status_update`
@@ -449,15 +358,6 @@ A vehicle's panel/door/light/tyre damage changed.
 vehicle::damage_status_update(int vid, int pid, int panels, int doors, int lights, int tyres) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `vid` | `int` |
-| `pid` | `int` |
-| `panels` | `int` |
-| `doors` | `int` |
-| `lights` | `int` |
-| `tyres` | `int` |
-
 Returns: `—`
 
 ### `vehicle::death`
@@ -467,11 +367,6 @@ A vehicle was destroyed; `killer` is the responsible player id.
 ```knight
 vehicle::death(int vid, int killer) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `vid` | `int` |
-| `killer` | `int` |
 
 Returns: `—`
 
@@ -493,14 +388,6 @@ An actor took damage; reports attacker, amount, weapon and body part.
 world::actor_damage(int actorid, int playerid, float amount, int weaponid, int bodypart) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `actorid` | `int` |
-| `playerid` | `int` |
-| `amount` | `float` |
-| `weaponid` | `int` |
-| `bodypart` | `int` |
-
 Returns: `—`
 
 ### `world::area_enter`
@@ -510,10 +397,6 @@ A player entered a dynamic area.
 ```knight
 world::area_enter(int playerid, int area) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `area` | `int` |
 
 Returns: `—`
 
@@ -525,10 +408,6 @@ A player left a dynamic area.
 world::area_leave(int playerid, int area) { ... };
 ```
 
-| Parameter | Type |
-|---|---|
-| `area` | `int` |
-
 Returns: `—`
 
 ### `world::checkpoint`
@@ -538,12 +417,6 @@ A player entered their checkpoint.
 ```knight
 world::checkpoint(int playerid, float x, float y, float z) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `x` | `float` |
-| `y` | `float` |
-| `z` | `float` |
 
 Returns: `—`
 
@@ -564,13 +437,6 @@ Factory event to construct an object; return the created Object.
 ```knight
 world::object_create(int model, float x, float y, float z) { ... };
 ```
-
-| Parameter | Type |
-|---|---|
-| `model` | `int` |
-| `x` | `float` |
-| `y` | `float` |
-| `z` | `float` |
 
 Returns: `Object`
 

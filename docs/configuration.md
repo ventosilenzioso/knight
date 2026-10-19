@@ -1,15 +1,6 @@
 # Knight — Configuration Reference
 
-`system::config()` writes `server.cfg` keys when the gamemode loads.
-Only assignments are allowed inside the block.
-
-```knight
-system::config() {
-    server.name = "My Server";
-    server.max_players = 100;
-    server.port = 7777;
-};
-```
+`system::config()` writes `server.cfg` keys.
 
 | Field | Type | server.cfg key |
 |---|---|---|
@@ -29,3 +20,5 @@ system::config() {
 | `server.weather` | `int` | `weather` |
 | `server.web_url` | `string` | `weburl` |
 | `server.world_time` | `int` | `worldtime` |
+
+Custom models (0.3.DL) use `useartwork`, `artpath`, `artwork_cdn`, `artwork_port` in server.cfg.
