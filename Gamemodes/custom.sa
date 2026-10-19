@@ -1,0 +1,46 @@
+// SA-MP 0.3.DL custom model demo.
+//
+// Put the .dff/.txd files in the folder set by `artpath` in server.cfg
+// (default: models/ next to server.cfg) and enable `useartwork 1`.
+// Custom skin ids are 20001..30000; custom object ids are -30000..-1000.
+// 0.3.7 clients never receive custom models: they automatically fall back to
+// the base model, so old clients keep working without changes.
+
+system::config() {
+    server.name = "Knight DL";
+    server.max_players = 100;
+    server.port = 7777;
+};
+
+system::start() {
+    // Base skin 305 doubled as custom skin 20001, and base object 19379 as
+    // custom object -2000. Files are served from artpath.
+    AddPlayerClass(20001, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(305, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+
+    if (AddCharModel(305, 20001, "custom.dff", "custom.txd")) {
+        Log("registered custom skin 20001");
+    } else {
+        Log("custom skin not registered (check artpath/models)");
+    }
+    if (AddSimpleModel(-1, 19379, -2000, "custom.dff", "custom.txd")) {
+        Log("registered custom object -2000");
+    }
+};
+
+player::connect(int playerid) {
+    SendClientMessage(playerid, "Welcome to the DL demo.");
+};
+
+// Called when a DL client asks for a model/texture file. Return true to accept
+// (the engine serves it from artwork_cdn/artpath), or call RedirectDownload()
+// with a custom URL first and return true.
+player::request_download(int type, int crc) {
+    Log("download request type=" + str(type) + " crc=" + str(crc));
+    return true;
+};
+
+// Called when a DL client finished downloading models for a virtual world.
+player::finished_downloading(int virtualworld) {
+    Log("client finished downloading for vw " + str(virtualworld));
+};

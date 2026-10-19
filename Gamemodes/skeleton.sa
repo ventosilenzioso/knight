@@ -1,0 +1,82 @@
+// Optional: natives are built in, so a single file works without any include.
+// #include <knight>
+
+// ============================================================
+// Knight (.sa) gamemode skeleton
+// ============================================================
+// Copy this file, rename it, and point server.cfg at it:
+//     gamemode0 myserver 1
+// The server transpiles .sa to Lua at load time.
+// ============================================================
+
+system::config() {
+    server.name = "Knight Server";
+    server.gamemode = "knight 1";
+    server.max_players = 50;
+    server.port = 7777;
+    server.language = "English";
+    server.weather = 10;
+    server.world_time = 12;
+    server.gravity = 0.008;
+    server.stream_distance = 300.0;
+    server.announce = false;
+};
+
+system::start() {
+    DisableInteriorEnterExits();
+    SetGameModeText("Knight");
+
+    // Classes: skin, x, y, z, angle, weapon, ammo
+    AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(7, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+};
+
+system::stop() {
+    // Persist state here.
+};
+
+player::connect() {
+    SendClientMessage(playerid, "Welcome, {PlayerName(playerid)}!");
+};
+
+player::spawn() {
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 0.0);
+    SendClientMessage(playerid, "Spawned. Money: {GetPlayerMoney(playerid)}");
+};
+
+player::death(Player killer) {
+    if (killer != null) {
+        SendClientMessage(playerid, "Killed by {PlayerName(killer)}.");
+    } else {
+        SendClientMessage(playerid, "You died.");
+    }
+};
+
+player::chat(string message) {
+    return true;
+};
+
+player::command("/help") {
+    SendClientMessage(playerid, "Commands: /heal /stats /tp <x> <y> <z>");
+};
+
+player::command("/heal") {
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 100.0);
+    SendClientMessage(playerid, "Healed.");
+};
+
+player::command("/stats") {
+    SendClientMessage(playerid, "Name: {PlayerName(playerid)} | HP: {GetPlayerHealth(playerid)} | Money: {GetPlayerMoney(playerid)} | Score: {GetPlayerScore(playerid)}");
+};
+
+player::command("/tp", float x, float y, float z) {
+    SetPlayerPos(playerid, x, y, z);
+    SendClientMessage(playerid, "Teleported to {x}, {y}, {z}.");
+};
+
+timer::every(60s) {
+    // Called once per minute. `playerid` is the broadcast pseudo-object here.
+    // SendClientMessage(playerid, "Server uptime tick.");
+};

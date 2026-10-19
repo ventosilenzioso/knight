@@ -4,15 +4,31 @@
 0.3.7 server. Gamemodes are authored as a single `.sa` file: you declare
 callbacks, configure the server, and call native functions directly by name.
 
-This repository is the **public language distribution**: the language
-reference, runnable examples, and prebuilt copies of the standalone `knight`
-validator. It intentionally does **not** contain the compiler implementation.
+This repository is the **public distribution** of Knight: the server
+binaries, the language reference, runnable examples, and the standalone
+`knight` validator. It intentionally does **not** contain the engine source
+(that lives in `knight-source`).
 
 ```
-bin/       prebuilt knight validator (linux/macos/windows)
-docs/      language, callbacks, natives, built-ins, configuration
-examples/  runnable .sa gamemodes
+Bin/            knight-server binaries (linux / windows)
+Gamemodes/      ready-to-run .sa gamemodes
+Models/         custom .dff/.txd files (0.3.DL)
+Scriptfiles/    runtime files
+server.cfg      default server configuration
+tools/          prebuilt knight validator (linux/macos/windows)
+docs/           language, callbacks, natives, built-ins, configuration
+examples/       runnable .sa gamemodes
 ```
+
+## Run the server
+
+```bash
+./Bin/knight-server -cfg server.cfg
+# Windows: Bin\knight-server.exe -cfg server.cfg
+```
+
+The default config loads `Gamemodes/bare.sa`. Put custom models in `Models/`
+(or pass any path in the gamemode) and keep `useartwork 1`.
 
 ## Documentation
 
@@ -30,10 +46,10 @@ examples/  runnable .sa gamemodes
 `#include`s, lexes, parses, and type-checks.
 
 ```bash
-./bin/knight-linux-amd64 -check examples/full.sa
+./tools/knight-linux-amd64 -check examples/full.sa
 # ok: 18 events, 1 config blocks
 
-./bin/knight-linux-amd64 -ast examples/minimal.sa   # dump the parsed AST
+./tools/knight-linux-amd64 -ast examples/minimal.sa   # dump the parsed AST
 ```
 
 Every shipped `examples/*.sa` passes `-check`.
@@ -142,7 +158,7 @@ and a safe object fallback. See `examples/custom_vehicles.sa`.
 ## Verifying
 
 ```bash
-for f in examples/*.sa; do ./bin/knight-linux-amd64 -check "$f" || exit 1; done
+for f in examples/*.sa; do ./tools/knight-linux-amd64 -check "$f" || exit 1; done
 ```
 
 ## License

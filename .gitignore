@@ -1,2 +1,10 @@
 *.tmp
 .DS_Store
+*.exe
+!Bin/*.exe
+*.log
+*.pcap
+Scriptfiles/*
+!Scriptfiles/.gitkeep
+Models/*
+!Models/.gitkeep

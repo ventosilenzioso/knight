@@ -1,0 +1,150 @@
+#include <knight>
+
+// ============================================================
+// Knight Starter Gamemode — Knight (.sa) edition
+// ============================================================
+// This is the default gamemode. It is transpiled to Lua at load time and
+// calls the same sa.* natives as the legacy Lua gamemode (bare.lua).
+// ============================================================
+
+system::config() {
+    server.name = "Knight Server";
+    server.gamemode = "bare 1";
+    server.max_players = 50;
+    server.port = 7777;
+    server.language = "English";
+    server.weather = 10;
+    server.world_time = 12;
+    server.gravity = 0.008;
+    server.stream_distance = 300.0;
+    server.announce = false;
+};
+
+// ---- World setup (runs once) ----
+system::start() {
+    DisableInteriorEnterExits();
+    SetGameModeText("Knight 1");
+
+    // Spawn classes: skin, x, y, z, angle, weapon, ammo
+    AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(7, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(21, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    AddPlayerClass(29, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+
+    SetWeather(10);
+    SetWorldTime(12);
+    SetGravity(0.008);
+};
+
+// TextDraws are created once at load time (module-level declarations), then
+// shown per-player on spawn.
+let brand_td = 0;
+TextDrawCreate(brand_td, 530, 8, "Knight");
+TextDrawLetterSize(brand_td, 0.4, 1.6);
+TextDrawColor(brand_td, 0xFFFFFFFF);
+
+let help_td = 1;
+TextDrawCreate(help_td, 8, 8, "Type /help for commands");
+TextDrawLetterSize(help_td, 0.28, 1.1);
+TextDrawColor(help_td, 0x00FF00FF);
+
+// ---- Player lifecycle ----
+player::connect() {
+    SendClientMessage(playerid, "Welcome to Knight, {PlayerName(playerid)}!");
+    SetPlayerCameraPos(playerid, 1978.0, 1343.0, 35.0);
+    SetPlayerCameraLookAt(playerid, 1978.0, 1343.0, 15.0, 1);
+};
+
+player::spawn() {
+    SetPlayerCameraBehindPlayer(playerid);
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 0.0);
+
+    TextDrawShowForPlayer(playerid, brand_td);
+    TextDrawShowForPlayer(playerid, help_td);
+
+    // Radar blip at spawn.
+    SetPlayerMapIcon(playerid, 10, 1958.4, 1343.2, 15.4, 0, 0x00FF00FF, 1);
+    SendClientMessage(playerid, "Spawned. HP: {GetPlayerHealth(playerid)} | Money: {GetPlayerMoney(playerid)}");
+};
+
+player::death(Player killer) {
+    if (killer != null) {
+        SendClientMessage(playerid, "You were killed by {PlayerName(killer)}.");
+        SetPlayerScore(killer, GetPlayerScore(killer) + 1);
+    } else {
+        SendClientMessage(playerid, "You died.");
+    }
+};
+
+player::chat(string message) {
+    return true;
+};
+
+// ---- Commands ----
+player::command("/help") {
+    SendClientMessage(playerid, "Commands: /heal /stats /tp <x> <y> <z> /pay <player> <amount> /money <amount> /skin <id> /giveweapon <id> <ammo> /anim <lib> <name> /dance /camera");
+};
+
+player::command("/heal") {
+    SetPlayerHealth(playerid, 100.0);
+    SetPlayerArmour(playerid, 100.0);
+    SendClientMessage(playerid, "Healed.");
+};
+
+player::command("/stats") {
+    SendClientMessage(playerid, "Name: {PlayerName(playerid)} | HP: {GetPlayerHealth(playerid)} | Armour: {GetPlayerArmour(playerid)} | Money: {GetPlayerMoney(playerid)} | Score: {GetPlayerScore(playerid)}");
+};
+
+player::command("/tp", float x, float y, float z) {
+    SetPlayerPos(playerid, x, y, z);
+    SendClientMessage(playerid, "Teleported to {x}, {y}, {z}.");
+};
+
+player::command("/pay", Player target, int amount) {
+    if (target == null) {
+        SendClientMessage(playerid, "Player not found.");
+        return;
+    }
+    if (amount <= 0) {
+        SendClientMessage(playerid, "Amount must be > 0.");
+        return;
+    }
+    if (GetPlayerMoney(playerid) < amount) {
+        SendClientMessage(playerid, "Not enough money.");
+        return;
+    }
+    GivePlayerMoney(playerid, -(amount));
+    GivePlayerMoney(target, amount);
+    SendClientMessage(playerid, "Paid {amount} to {PlayerName(target)}.");
+    SendClientMessage(target, "Received {amount} from {PlayerName(playerid)}.");
+};
+
+player::command("/money", int amount) {
+    GivePlayerMoney(playerid, amount);
+    SendClientMessage(playerid, "Money changed by {amount}.");
+};
+
+player::command("/skin", int skin) {
+    SetPlayerSkin(playerid, skin);
+    SendClientMessage(playerid, "Skin changed to {skin}.");
+};
+
+player::command("/giveweapon", int weapon, int ammo) {
+    GivePlayerWeapon(playerid, weapon, ammo);
+    SendClientMessage(playerid, "Weapon {weapon} given with {ammo} ammo.");
+};
+
+player::command("/anim", string lib, string name) {
+    ApplyPlayerAnimation(playerid, lib, name, 4.1, true, false, false, false, 0);
+    SendClientMessage(playerid, "Animation {lib}/{name} applied.");
+};
+
+player::command("/dance") {
+    SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE1);
+};
+
+player::command("/camera") {
+    TogglePlayerWidescreen(playerid, true);
+    SendClientMessage(playerid, "Widescreen toggled.");
+};
