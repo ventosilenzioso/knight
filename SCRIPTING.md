@@ -43,27 +43,20 @@ chassis model.
 
 ### Where do .dff / .txd files go?
 
-Put them in the folder named by `artpath` in `server.cfg` (default `Models`,
-next to `server.cfg`):
-
-```
-core/
-├── server.cfg        # useartwork 1 / artpath Models
-├── Models/           # <-- custom.dff, custom.txd, veh.dff, veh.txd, ...
-└── Gamemodes/
-```
-
-File arguments work like C++ includes — pass any path you like:
+Anywhere you like — file arguments behave like C++ includes:
 
 ```knight
-AddSimpleModel(-1, 19379, -2000, "veh.dff", "veh.txd");                 // bare name -> artpath/veh.dff
-AddSimpleModel(-1, 19379, -2001, "assets/veh.dff", "assets/veh.txd");  // relative to the server CWD
-AddSimpleModel(-1, 19379, -2002, "/srv/models/veh.dff", "/srv/models/veh.txd"); // absolute
+AddSimpleModel(-1, 19379, -2000, "/srv/models/veh.dff", "/srv/models/veh.txd"); // absolute
+AddSimpleModel(-1, 19379, -2001, "assets/veh.dff", "assets/veh.txd");           // relative to CWD
+AddSimpleModel(-1, 19379, -2002, "veh.dff", "veh.txd");                         // bare -> artpath
 ```
 
-A bare file name is looked up under `artpath`; a path containing `/` or `\`
-(relative) or an absolute path is used verbatim. Download URLs use the file
-name (`basename`), so serve the folder named in the URL, not the original
-nested path. `artpath` is resolved against the server's working directory; on
-Linux names are case-sensitive (`Models` != `models`).
-At startup the server logs the resolved folder, or a warning if it is missing.
+- A path containing `/` or `\` (or an absolute path) is used verbatim,
+  relative to the server's working directory.
+- A bare file name is looked up under the optional `artpath` setting. With no
+  `artpath`, bare names are rejected with "give a full path (or set artpath...)".
+- `useartwork 1` is the default; `useartwork 0` disables custom models entirely.
+- Download URLs use the file name (`basename`). Point `artwork_cdn` at a folder
+  that exposes those names (nested source paths are not mirrored automatically).
+- Names are case-sensitive on Linux.
+- There is no required `Models/` or `Scriptfiles/` folder in the distribution.

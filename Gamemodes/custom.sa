@@ -1,7 +1,8 @@
 // SA-MP 0.3.DL custom model demo.
 //
-// Put the .dff/.txd files in the folder set by `artpath` in server.cfg
-// (default: models/ next to server.cfg) and enable `useartwork 1`.
+// Pass any path to the model files, like a C++ include: absolute
+// ("/srv/models/x.dff") or relative with a separator ("assets/x.dff").
+// A bare file name ("x.dff") is looked up under the optional `artpath`.
 // Custom skin ids are 20001..30000; custom object ids are -30000..-1000.
 // 0.3.7 clients never receive custom models: they automatically fall back to
 // the base model, so old clients keep working without changes.
@@ -14,14 +15,14 @@ system::config() {
 
 system::start() {
     // Base skin 305 doubled as custom skin 20001, and base object 19379 as
-    // custom object -2000. Files are served from artpath.
+    // custom object -2000. Files are read from the given paths.
     AddPlayerClass(20001, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
     AddPlayerClass(305, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
 
     if (AddCharModel(305, 20001, "custom.dff", "custom.txd")) {
         Log("registered custom skin 20001");
     } else {
-        Log("custom skin not registered (check artpath/models)");
+        Log("custom skin not registered (check model paths)");
     }
     if (AddSimpleModel(-1, 19379, -2000, "custom.dff", "custom.txd")) {
         Log("registered custom object -2000");
@@ -33,7 +34,7 @@ player::connect(int playerid) {
 };
 
 // Called when a DL client asks for a model/texture file. Return true to accept
-// (the engine serves it from artwork_cdn/artpath), or call RedirectDownload()
+// (the engine serves it from artwork_cdn or the file name), or call RedirectDownload()
 // with a custom URL first and return true.
 player::request_download(int type, int crc) {
     Log("download request type=" + str(type) + " crc=" + str(crc));

@@ -5,7 +5,7 @@
 // model attached on top. 0.3.7 clients see the normal base vehicle and the
 // object fallback, so old clients keep working.
 //
-// Custom object ids: -30000..-1000. Put the .dff/.txd in artpath (models/).
+// Custom object ids: -30000..-1000. Pass any path to the .dff/.txd files.
 
 system::config() {
     server.name = "Knight Custom Vehicles";
@@ -25,7 +25,7 @@ system::start() {
             Log("custom vehicle created: " + str(vid));
         }
     } else {
-        Log("custom vehicle model missing (check artpath/models)");
+        Log("custom vehicle model missing (check model paths)");
     }
 };
 

@@ -12,8 +12,6 @@ binaries, the language reference, runnable examples, and the standalone
 ```
 Bin/            knight-server binaries (linux / windows)
 Gamemodes/      ready-to-run .sa gamemodes
-Models/         custom .dff/.txd files (0.3.DL)
-Scriptfiles/    runtime files
 server.cfg      default server configuration
 tools/          prebuilt knight validator (linux/macos/windows)
 docs/           language, callbacks, natives, built-ins, configuration
@@ -27,8 +25,15 @@ examples/       runnable .sa gamemodes
 # Windows: Bin\knight-server.exe -cfg server.cfg
 ```
 
-The default config loads `Gamemodes/bare.sa`. Put custom models in `Models/`
-(or pass any path in the gamemode) and keep `useartwork 1`.
+The default config loads `Gamemodes/bare.sa`. Custom model files can live
+anywhere: pass a path (absolute, or relative with a `/`) straight to
+`AddCharModel` / `AddSimpleModel`, like a C++ include. A bare file name is only
+looked up in the optional `artpath` folder. Custom models run by default
+(`useartwork 1`); no `Models/` or `Scriptfiles/` folder is required.
+
+```knight
+AddSimpleModel(-1, 19379, -2000, "/srv/models/veh.dff", "/srv/models/veh.txd");
+```
 
 ## Documentation
 
