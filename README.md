@@ -6,8 +6,8 @@ callbacks, configure the server, and call native functions directly by name.
 
 This repository is the **public distribution** of Knight: the server
 binaries, the language reference, runnable examples, and the standalone
-`knight` validator. It intentionally does **not** contain the engine source
-(that lives in `knight-source`).
+`knight` validator. The engine source (SA-MP + Knight) is public at
+**https://github.com/ventosilenzioso/knight-server**.
 
 ```
 Bin/            knight-server binaries (linux / windows)
