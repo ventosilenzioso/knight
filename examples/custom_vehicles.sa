@@ -1,0 +1,41 @@
+// SA-MP 0.3.DL custom vehicle demo.
+//
+// 0.3.DL has no "vehicle model" type: a custom vehicle is a normal drivable
+// base vehicle whose chassis is hidden for DL clients, with a custom object
+// model attached on top. 0.3.7 clients see the normal base vehicle and the
+// object fallback, so old clients keep working.
+//
+// Custom object ids: -30000..-1000. Put the .dff/.txd in artpath (models/).
+
+system::config() {
+    server.name = "Knight Custom Vehicles";
+    server.max_players = 100;
+    server.port = 7777;
+};
+
+system::start() {
+    // Fallback class (0.3.7 sees this) and a custom-vehicle spawn area.
+    AddPlayerClass(305, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+
+    if (AddSimpleModel(-1, 19379, -2000, "veh.dff", "veh.txd")) {
+        // Base vehicle 411 (Infernus) with custom model -2000 attached and the
+        // DL chassis hidden. The 9th argument = invisible for DL clients.
+        let vid = CreateCustomVehicle(411, -2000, 1958.4, 1348.0, 15.4, 90.0, 3, 3, true);
+        if (vid > 0) {
+            Log("custom vehicle created: " + str(vid));
+        }
+    } else {
+        Log("custom vehicle model missing (check artpath/models)");
+    }
+};
+
+player::command("/cv") {
+    let vid = GetCustomVehicleObject(GetPlayerVehicleID(playerid));
+    if (vid != -1) {
+        SendClientMessage(playerid, "You are in a custom vehicle.");
+    } else {
+        SendClientMessage(playerid, "Normal vehicle.");
+    }
+};
+
+player::request_download(int type, int crc) { return true; };

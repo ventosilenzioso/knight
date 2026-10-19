@@ -1,8 +1,8 @@
 # Knight — Native Function Reference
 
-Natives are global functions: `SetPlayerHealth(playerid, 100.0)`.
+Natives are global functions.
 
-There are **508** natives.
+There are **512** natives.
 
 | Native | Description |
 |---|---|
@@ -54,6 +54,7 @@ There are **508** natives.
 | `Create3DTextLabelAttachedToPlayer` | Create a 3D label attached to a player. |
 | `Create3DTextLabelAttachedToVehicle` | Create a 3D label attached to a vehicle. |
 | `CreateActor` | Create a static actor. |
+| `CreateCustomVehicle` | Create a drivable base vehicle with a custom object model attached (0.3.DL). |
 | `CreateDynamic3DTextLabel` | Create a streamed 3D text label. |
 | `CreateDynamicActor` | Create a streamed dynamic actor. |
 | `CreateDynamicCP` | Create a streamed checkpoint. |
@@ -75,6 +76,7 @@ There are **508** natives.
 | `DeletePlayer3DTextLabel` | Delete a player 3D text label. |
 | `DeleteSVar` | Delete a server variable. |
 | `DestroyActor` | Destroy a static actor. |
+| `DestroyCustomVehicle` | Destroy a custom vehicle and its attached object. |
 | `DestroyDynamic3DTextLabel` | Destroy a streamed 3D text label. |
 | `DestroyDynamicActor` | Destroy a dynamic actor. |
 | `DestroyDynamicArea` | Destroy a dynamic area. |
@@ -128,6 +130,7 @@ There are **508** natives.
 | `GetConsoleVarAsBool` | Read a boolean console variable. |
 | `GetConsoleVarAsInt` | Read an integer console variable. |
 | `GetConsoleVarAsString` | Read a string console variable. |
+| `GetCustomVehicleObject` | Get the object id attached to a custom vehicle, or -1. |
 | `GetDistanceBetweenPlayers` | Distance between two players. |
 | `GetDynamicObjectPos` | Get a dynamic object's position. |
 | `GetDynamicObjectRot` | Get a dynamic object's rotation. |
@@ -240,6 +243,7 @@ There are **508** natives.
 | `InterpolateCameraPos` | Interpolate the camera position. |
 | `IsActorInvulnerable` | Whether an actor is invulnerable. |
 | `IsActorStreamedIn` | Whether an actor is streamed to a player. |
+| `IsCustomVehicle` | Whether a vehicle was created by CreateCustomVehicle. |
 | `IsObjectMoving` | Whether an object is moving. |
 | `IsPlayerAdmin` | Whether a player is an admin. |
 | `IsPlayerAttachedObjectSlotUsed` | Whether an attached-object slot is used. |

@@ -1,7 +1,5 @@
 # Knight — Built-in Functions
 
-Built-ins are language-level functions available in every handler.
-
 | Function | Returns | Description |
 |---|---|---|
 | `abs(any)` | `float` | Absolute value. |

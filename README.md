@@ -124,6 +124,21 @@ are supported unchanged: they never receive model data and fall back to the
 base model. See [`docs/natives.md`](docs/natives.md) and
 [`docs/callbacks.md`](docs/callbacks.md).
 
+## Custom vehicles (crafted on 0.3.DL)
+
+SA-MP 0.3.DL has no custom vehicle model, so Knight builds one from a drivable
+base vehicle plus an attached custom object:
+
+```knight
+system::start() {
+    AddSimpleModel(-1, 19379, -2000, "veh.dff", "veh.txd");
+    let vid = CreateCustomVehicle(411, -2000, 1958.4, 1348.0, 15.4, 90.0, 3, 3, true);
+};
+```
+
+`true` hides the chassis for 0.3.DL clients; 0.3.7 clients see the base vehicle
+and a safe object fallback. See `examples/custom_vehicles.sa`.
+
 ## Verifying
 
 ```bash

@@ -1,7 +1,5 @@
 # Knight — Configuration Reference
 
-`system::config()` writes `server.cfg` keys.
-
 | Field | Type | server.cfg key |
 |---|---|---|
 | `server.announce` | `bool` | `announce` |
@@ -21,4 +19,4 @@
 | `server.web_url` | `string` | `weburl` |
 | `server.world_time` | `int` | `worldtime` |
 
-Custom models (0.3.DL) use `useartwork`, `artpath`, `artwork_cdn`, `artwork_port` in server.cfg.
+Custom models/vehicles use `useartwork`, `artpath`, `artwork_cdn`, `artwork_port`, `custom_invisible_vehicle_model`.
