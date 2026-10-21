@@ -6,11 +6,61 @@ first argument. There is no `sa.` prefix and no `self`.
 
 See the full references shipped with the language:
 
-- Native functions: `docs/natives.md`
-- Callbacks: `docs/callbacks.md`
+- Native functions: `docs/natives.md` (559, with signatures)
+- Callbacks: `docs/callbacks.md` (41)
 - Language: `docs/language.md`
-- Built-ins: `docs/builtins.md`
-- Configuration: `docs/configuration.md`
+- Built-ins: `docs/builtins.md` (60)
+- Configuration: `docs/configuration.md` (server.cfg is optional)
+- Modules and plugins: `docs/plugins.md`
+
+## Quick syntax tour
+
+```knight
+system::config() { server.name = "My Server"; };   // no server.cfg needed
+
+const MAX_HP = 100;
+
+function heal(Player target, float hp = MAX_HP) {  // typed + default args
+    if (hp > MAX_HP) { hp = MAX_HP; }
+    SetPlayerHealth(target, hp);
+}
+
+player::command("/top", int n) {
+    let scores = {};
+    for (let i = 0; i < PlayerCount(); i += 1) {
+        if (!IsPlayerConnected(i)) { continue; }
+        scores[i] = GetPlayerScore(i);
+    }
+    let shown = 0;
+    for (let key in sort(keys(scores))) {
+        if (shown >= n) { break; }
+        SendClientMessage(playerid, "{key}: {scores[key]}");
+        shown += 1;
+    }
+}
+
+on player::chat(string message) {                  // declarative hook
+    if (contains(lower(message), "cheat")) { return false; }
+    return true;
+};
+```
+
+## Modules and plugins
+
+```knight
+// Gamemodes/main.sa
+import "economy";
+system::config() { server.plugins = ["plugins", "mods/anticheat.sa"]; };
+```
+
+- `module "name" { ... };`, `import "x";`, `export function ...` split a
+  gamemode across files; modules are type-checked together.
+- A boolean handler returning `false` vetoes the event for later handlers.
+- `server.plugins` accepts folders (Go plugins and `.sa` files) or a single
+  `.sa` file. Script plugins need no rebuild.
+- The JSON plugin ships compiled in: `JsonParse`, `JsonGetInt`, `JsonSaveFile`, …
+
+See `docs/plugins.md`.
 
 ## SA-MP 0.3.DL custom models
 

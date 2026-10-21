@@ -24,11 +24,71 @@ method syntax.
 ## 2. Declarations
 
 ```knight
-system::config() { ... };          // server.cfg configuration
+system::config() { ... };          // server configuration (server.cfg is optional)
 namespace::callback(params) { ... }; // engine callback
+on namespace::callback(params) { ... }; // same callback, declarative form
 function name(params) { ... };     // helper function
+export function name(params) { ... }; // helper callable across modules
+const NAME = expr;                 // constant (reassignment is an error)
 let name = expr;                   // variable
 ```
+
+### Function parameters
+
+Parameters are typed and checked at compile time. Trailing parameters may have
+default values, and a final `...rest` parameter collects extra arguments:
+
+```knight
+function heal(Player target, float hp = 100.0, int times = 1) { ... }
+function total(int first, ...rest) {
+    let sum = first;
+    for (let n in rest) { sum += n; }
+    return sum;
+}
+
+heal(playerid);                  // hp = 100.0, times = 1
+total(1, 2, 3, 4);               // 10
+```
+
+Supported parameter types: `int`, `float`, `string`, `bool`, `array`, `map`,
+`Player`, `Vehicle`, `Object`, `TextDraw`. Defaults are evaluated when the
+function is called. Passing the wrong type, too few arguments or too many
+arguments is a compile error. A `Player` parameter also accepts an integer id.
+
+### Constants
+
+```knight
+const MAX_HP = 100;
+const RATIO: float = 0.5;
+```
+
+A `const` can be declared at module level or inside a function. Assigning to it
+is rejected at compile time.
+
+### Modules
+
+```knight
+// modules/economy.sa
+module "economy" { version: "1.0.0"; author: "Knight"; };
+
+let balances = {};
+
+function economyAdd(int id, int amount) { balances[id] = at(balances, id) + amount; }
+export function economyBalance(int id) { return at(balances, id); }
+```
+
+```knight
+// Gamemodes/main.sa
+import "economy";
+
+player::command("/bal") {
+    SendClientMessage(playerid, "Saldo: {economyBalance(playerid)}");
+};
+```
+
+An `import` loads a module once; circular imports are rejected. Every top-level
+`function` in the program is callable from any file; `export` is documentation
+for readers. See [`plugins.md`](plugins.md).
 
 > The trailing `;` after a callback/function/config block **is required**.
 
@@ -93,7 +153,13 @@ player::disconnect(int playerid) { totalPlayers -= 1; };
 | `== != ~=` | equality; `~=` is an alias for `!=` |
 | `< <= > >=` | comparison |
 | `and or not` | logical, also `&&`, `\|\|`, `!` |
+| `& \| ^ ~ << >>` | bitwise and/or/xor/not and shifts |
+| `? :` | ternary (`hp > 50 ? "ok" : "low"`) |
 | `+= -= *= /= %=` | compound assignment |
+| `&= \|= ^= <<= >>=` | compound bitwise assignment |
+
+Precedence, highest first: unary (`! ~ - +`) → `* / %` → `+ -` → `<< >>` →
+comparisons → equality → `&` → `^` → `\|` → `and` → `or` → `?:`.
 
 ---
 
@@ -112,8 +178,65 @@ if (cond) {
 `return expr;` returns from the callback. Boolean callbacks use the return
 value as a veto — `player::request_spawn` returning `false` blocks the spawn.
 
-> There is no `while`/`for` loop in this version. Iterate with `len`/`at` and a
-> counter (see [`builtins.md`](builtins.md)).
+### Loops
+
+```knight
+// while
+let i = 0;
+while (i < 10) {
+    i += 1;
+}
+
+// do..while: runs at least once
+do {
+    i -= 1;
+} while (i > 0);
+
+// C-style for
+for (let n = 0; n < 5; n += 1) {
+    if (n == 3) { break; }
+}
+
+// iterate an array
+let names = ["amy", "bob"];
+for (let name in names) { ... }
+
+// array with index
+for (let index, name in names) { ... }
+
+// map: keys in sorted order
+let scores = { "amy": 10, "bob": 20 };
+for (let key in scores) {
+    SendClientMessage(playerid, "{key} = {scores[key]}");
+}
+
+// map with value
+for (let key, value in scores) { ... }
+
+// skip iterations
+for (let n = 0; n < 20; n += 1) {
+    if (n % 2 == 0) { continue; }
+}
+```
+
+`break` leaves the nearest loop or `switch`; `continue` jumps to the next
+iteration. Using them outside a loop is a compile error.
+
+### switch
+
+```knight
+switch (classid) {
+    case 0:
+        SendClientMessage(playerid, "Medic");
+    case 1:
+        SendClientMessage(playerid, "Police");
+    default:
+        SendClientMessage(playerid, "Civilian");
+}
+```
+
+There is **no fall-through**: the first matching arm runs, then the switch ends.
+`case` values may be numbers, strings or `null`.
 
 ---
 
@@ -128,6 +251,15 @@ let z = null;
 let ms = 500ms;                  // duration -> milliseconds
 let a = [1, 2, 3];               // array
 let m = { "hp": 100, name: "CJ" }; // map
+let c = a[1:3];                  // slice -> [2, 3]
+let d = "Knight"[1:4];           // slice -> "nig"
+let e = a[:2];                   // from the start
+let f = a[1:];                   // to the end
+let g = "Knight"[2];             // single character -> "i"
+
+let x = 0;
+let y = 0;
+x, y = 7;                        // comma assignment: both become 7
 a[0] = 10;
 m["score"] = 5;
 ```
@@ -169,6 +301,30 @@ player::command("/give", int amount) {
 
 The full list is in [`natives.md`](natives.md).
 
+Plugin natives (for example the bundled JSON plugin) are called the same way:
+
+```knight
+let doc = JsonParse("\{\"name\":\"CJ\"\}");
+let name = JsonGetString(doc, "name");
+JsonFree(doc);
+```
+
+Functions contributed by a script plugin or an imported module are also plain
+calls: `economyBalance(playerid)`.
+
+### Calling a function by name
+
+```knight
+function add(int a, int b) { return a + b; }
+
+let sum = CallRemoteFunction("add", 2, 3);   // 5
+let big = CallLocalFunction("isBig", 50);    // 1
+```
+
+The result is always an int: numbers truncate, `true`/`false` become `1`/`0`, a
+string returns its length, and `null` returns `0`. An unknown name is logged and
+returns `0`.
+
 ---
 
 ## 10. Commands
@@ -190,17 +346,21 @@ Arguments are parsed and bound by declared type.
 
 ## 11. Configuration
 
-`system::config()` writes `server.cfg` keys at load time:
+`system::config()` configures the server at load time. `server.cfg` is optional:
+values declared here always win, and code can be the only configuration source.
 
 ```knight
 system::config() {
     server.name = "My Server";
     server.max_players = 100;
     server.port = 7777;
+    server.connect_timeout = 20;
+    server.plugins = ["plugins", "modules/anticheat.sa"];
 };
 ```
 
-All keys are in [`configuration.md`](configuration.md).
+The values are readable at runtime (`"{server.name}"`). All keys, precedence and
+the `-cfg ""` flag are in [`configuration.md`](configuration.md).
 
 ---
 
@@ -247,6 +407,11 @@ sqlite_query_async(db, "onDbResult", "SELECT * FROM accounts");
 ---
 
 ## 15. Errors
+
+A runtime failure on one line of a callback is logged (`script error at
+LINE:COL: ...`) and skipped; the rest of the callback still runs and the server
+keeps processing that player. `return`, `break` and `continue` are unaffected.
+Unknown natives and type errors are caught before the server starts.
 
 - Parse/type errors are reported as `line:column: message`; the validator exits
   non-zero.

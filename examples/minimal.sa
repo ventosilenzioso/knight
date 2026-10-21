@@ -1,19 +1,30 @@
 // Minimal single-file Knight gamemode — no includes required.
+// The whole server configuration lives here: no server.cfg needed.
+//   ./knight-server -cfg "" -gamemode Gamemodes/minimal.sa
 system::config() {
     server.name = "Minimal Knight";
     server.max_players = 20;
     server.port = 7777;
-}
+    server.language = "English";
+    server.weather = 10;
+    server.world_time = 12;
+    server.gravity = 0.008;
+    server.connect_timeout = 20;
+};
 
 system::start() {
     AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
 };
 
 player::connect() {
-    SendClientMessage(playerid, "Welcome, {PlayerName(playerid)}!");
+    SendClientMessage(playerid, "Welcome to {server.name}, {PlayerName(playerid)}!");
 };
 
 player::command("/heal") {
     SetPlayerHealth(playerid, 100.0);
     SendClientMessage(playerid, "Healed.");
+};
+
+player::command("/info") {
+    SendClientMessage(playerid, "{server.name} | max {server.max_players} | port {server.port}");
 };

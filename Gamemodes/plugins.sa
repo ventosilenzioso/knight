@@ -1,0 +1,39 @@
+// Demonstrates modules, a script plugin and the bundled JSON plugin.
+// Run:  ./Bin/knight-server -cfg "" -gamemode Gamemodes/plugins.sa
+system::config() {
+    server.name = "Knight Plugins";
+    server.port = 7777;
+    server.max_players = 32;
+    server.connect_timeout = 20;
+    // A folder path loads every .sa in it and every subfolder with plugin.go.
+    // Paths are resolved relative to the server's working directory.
+    server.plugins = ["plugins/json"];
+};
+
+import "economy";
+import "anticheat";
+
+system::start() {
+    AddPlayerClass(0, 1958.4, 1343.2, 15.4, 270.0, 24, 50);
+    Log("plugins demo ready");
+};
+
+player::connect() {
+    economyAdd(playerid, 500);
+    SendClientMessage(playerid, "Welcome, {PlayerName(playerid)}. Saldo: {economyBalance(playerid)}");
+};
+
+player::command("/json") {
+    let doc = JsonParse("\{\"server\":\"Knight\",\"players\":32\}");
+    SendClientMessage(playerid,
+        "server={JsonGetString(doc, "server")} players={JsonGetInt(doc, "players")}");
+    JsonFree(doc);
+};
+
+player::command("/save") {
+    let doc = JsonParse("\{\"name\":\"CJ\"\}");
+    if (JsonSaveFile(doc, "players/cj.json", 2)) {
+        SendClientMessage(playerid, "Saved scriptfiles/players/cj.json");
+    }
+    JsonFree(doc);
+};

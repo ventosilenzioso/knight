@@ -1,0 +1,27 @@
+// Example module: keyword filter in chat with a three-strike kick.
+module "anticheat" {
+    version: "1.0.0";
+    author: "Knight";
+};
+
+const MAX_WARNINGS = 3;
+const BANNED_WORDS = ["cheat", "hack", "aimbot"];
+
+let warnings = {};
+
+function isBanned(string text) {
+    let low = lower(text);
+    for (let word in BANNED_WORDS) {
+        if (contains(low, word)) { return true; }
+    }
+    return false;
+}
+
+on player::chat(string message) {
+    if (!isBanned(message)) { return true; }
+    let count = at(warnings, playerid) + 1;
+    warnings[playerid] = count;
+    SendClientMessage(playerid, "Peringatan {count}/{MAX_WARNINGS}");
+    if (count >= MAX_WARNINGS) { Kick(playerid); }
+    return false;
+};

@@ -1,0 +1,26 @@
+// Example module: a simple per-player balance.
+// Import it from a gamemode with:  import "economy";
+module "economy" {
+    version: "1.0.0";
+    author: "Knight";
+};
+
+let balances = {};
+
+// Add (or remove, with a negative amount) money from a player's balance.
+function economyAdd(int id, int amount) {
+    balances[id] = at(balances, id) + amount;
+    return at(balances, id);
+}
+
+// Read a player's balance (0 when unknown).
+export function economyBalance(int id) {
+    return at(balances, id);
+}
+
+// Spends money if the player can afford it.
+export function economySpend(int id, int amount) {
+    if (at(balances, id) < amount) { return false; }
+    balances[id] = at(balances, id) - amount;
+    return true;
+}
